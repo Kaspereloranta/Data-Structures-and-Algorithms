@@ -9,6 +9,7 @@
 #include <utility>
 #include <limits>
 #include <functional>
+#include <unordered_set>
 
 // Types for IDs
 using PlaceID = long int;
@@ -74,7 +75,20 @@ using Distance = int;
 // Return value for cases where Duration is unknown
 Distance const NO_DISTANCE = NO_VALUE;
 
+struct Place
+{
+    std::string name;
+    PlaceType type;
+    Coord location;
+};
 
+struct Area
+{
+    std::string name;
+    std::unordered_multiset<Coord> shape;
+    bool isSubArea; // may be useless
+    int upperAreaID; // the upper area's ID
+};
 
 // This is the class you are supposed to implement
 
