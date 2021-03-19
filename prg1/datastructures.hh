@@ -79,17 +79,17 @@ Distance const NO_DISTANCE = NO_VALUE;
 
 struct Place
 {
-    std::string name;
+    Name placeName;
     PlaceType type;
     Coord location;
 };
 
 struct Area
 {
-    std::string name;
+    Name areaName;
     std::unordered_multiset<Coord, CoordHash> shape;
     bool isSubArea; // may be useless
-    int upperAreaID; // the upper area's ID
+    PlaceID upperAreaID; // the upper area's ID
 };
 
 // This is the class you are supposed to implement
@@ -105,8 +105,10 @@ public:
     // which is being used here.
     int place_count();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Linear. 2*Theta(n)
+    // Short rationale for estimate:  unordered_map's member function clear()'s complexity
+    // is linear in the size of the container. Now clear() is being called for places_ and areas_
+    // which brings the coefficient 2.
     void clear_all();
 
     // Estimate of performance:
@@ -203,8 +205,8 @@ private:
     // Add stuff needed for your class implementation here
 
 
-    std::unordered_map<int,Place> places_;       //key of the map is int ID of the place
-    std::unordered_map<int,Area> areas_;         //key of the map is int ID of the area
+    std::unordered_map<PlaceID,Place> places_;       //key of the map is int ID of the place
+    std::unordered_map<AreaID,Area> areas_;         //key of the map is int ID of the area
 };
 
 #endif // DATASTRUCTURES_HH

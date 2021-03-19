@@ -47,8 +47,14 @@ void Datastructures::clear_all()
 
 std::vector<PlaceID> Datastructures::all_places()
 {
-    // Replace this comment with your implementation
-    return {};
+    //TÄTÄ KANNATTAA YRITTÄÄ HIENOSÄÄTÄÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA
+
+    std::vector<PlaceID> placeIDs;
+    for(auto place : places_)
+    {
+        placeIDs.push_back(place.first);
+    }
+    return placeIDs;
 }
 
 bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coord xy)
