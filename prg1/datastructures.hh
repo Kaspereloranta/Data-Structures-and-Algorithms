@@ -87,7 +87,7 @@ struct Place
 struct Area
 {
     std::string name;
-    std::unordered_multiset<Coord> shape;
+    std::unordered_multiset<Coord, CoordHash> shape;
     bool isSubArea; // may be useless
     int upperAreaID; // the upper area's ID
 };

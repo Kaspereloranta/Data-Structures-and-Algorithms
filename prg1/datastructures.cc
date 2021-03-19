@@ -36,13 +36,13 @@ Datastructures::~Datastructures()
 
 int Datastructures::place_count()
 {
-    // Replace this comment with your implementation
-    return 0;
+    return places_.size();
 }
 
 void Datastructures::clear_all()
 {
-    // Replace this comment with your implementation
+    places_.clear();
+    areas_.clear();
 }
 
 std::vector<PlaceID> Datastructures::all_places()
