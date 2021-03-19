@@ -10,6 +10,8 @@
 #include <limits>
 #include <functional>
 #include <unordered_set>
+#include <unordered_map>
+
 
 // Types for IDs
 using PlaceID = long int;
@@ -199,6 +201,9 @@ public:
 private:
     // Add stuff needed for your class implementation here
 
+
+    std::unordered_map<int,Place> places;       //key of the map is int ID of the place
+    std::unordered_map<int,Area> areas;         //key of the map is int ID of the area
 };
 
 #endif // DATASTRUCTURES_HH
