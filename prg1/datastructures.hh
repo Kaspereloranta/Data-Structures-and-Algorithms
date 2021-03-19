@@ -100,8 +100,9 @@ public:
     Datastructures();
     ~Datastructures();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Constant. Theta(1).
+    // Short rationale for estimate: unordered_map's member function size() is constant on complexity,
+    // which is being used here.
     int place_count();
 
     // Estimate of performance:
@@ -202,8 +203,8 @@ private:
     // Add stuff needed for your class implementation here
 
 
-    std::unordered_map<int,Place> places;       //key of the map is int ID of the place
-    std::unordered_map<int,Area> areas;         //key of the map is int ID of the area
+    std::unordered_map<int,Place> places_;       //key of the map is int ID of the place
+    std::unordered_map<int,Area> areas_;         //key of the map is int ID of the area
 };
 
 #endif // DATASTRUCTURES_HH
