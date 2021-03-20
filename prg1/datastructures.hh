@@ -12,6 +12,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <map>
+#include <QDebug>
 
 // Types for IDs
 using PlaceID = long int;
@@ -122,10 +123,10 @@ public:
     // which is constant on average, but in worst-case O(n). Other opeartions used here are constant.
     bool add_place(PlaceID id, Name const& name, PlaceType type, Coord xy);
 
-    // Estimate of performance: Average: Constant, Theta(1). Worst-case 2*O(n).
+    // Estimate of performance: Average: Constant, Theta(1). Worst-case 3*O(n).
     // Short rationale for estimate: find() is being used here for unordered_map
     // which's complexity is constant on average but may be O(n) in the worst case.
-    // at() is also used for unordered_map, which's complexity is similar than find()'s.
+    // at() is also used for unordered_map for two times, which's complexity is similar than find()'s.
     std::pair<Name, PlaceType> get_place_name_type(PlaceID id);
 
     // Estimate of performance: Average: Constant, Theta(1). Worst-Case 2*O(n)
@@ -136,7 +137,7 @@ public:
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance: O(n * log(n) + n)
+    // Estimate of performance: O(n * log(n) + n) ~ O(n*log(n))
     // Short rationale for estimate: In the first for-loop
     // we insert elements to map, which's complexity is O(log n). And
     // we are doing that n times due to for-loop. On the second
@@ -145,8 +146,10 @@ public:
     // coefficient of 2 to the performance.
     std::vector<PlaceID> places_alphabetically();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n * log(n) + n) ~ O(n*log(n))
+    // Short rationale for estimate: Usage of insert() for multimap
+    // inside the for loop causes the factor n*log(n) and the
+    // later for-loop causes the factor n.
     std::vector<PlaceID> places_coord_order();
 
     // Estimate of performance:

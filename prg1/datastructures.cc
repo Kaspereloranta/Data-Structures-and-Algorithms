@@ -70,6 +70,7 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
     // if places_ already include an element with same key (PlaceID), insert() does not add anything to places_.
 
     return result.second; // result.second is now a bool value which tells whether the insertion above was successfull or not.
+
 }
 
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
@@ -149,8 +150,61 @@ std::vector<PlaceID> Datastructures::places_alphabetically()
 
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
-    // Replace this comment with your implementation
-    return {};
+    // Let's use multimap to sort places based on their location and
+    // store their PlaceIDs and y-coordinates as well for later inspection.
+    std::multimap<double,std::pair<PlaceID,double>> places_in_order;
+    // for-loop complexity: O(n)
+    for (auto place : places_)
+    {
+        places_in_order.insert({sqrt(pow(place.second.location.x,2)+pow(place.second.location.y,2))
+                                ,std::make_pair(place.first,place.second.location.y)});  // multiset.insert() complexity: O(log n)
+    }
+
+    // now places are in order based on their distance from origo in the multimap above
+    // but places with the exactly same distance may be tumbled.
+
+    std::vector<PlaceID> place_IDs_in_order;
+    // let's add PlaceIDs to vector based on places' distance
+    // and make sure that the places with same exact distance
+    // are added to vector in the right order, in which the
+    // place with the lowest y-coordinate will be added first.
+
+    // for-loop complexity: O(n)
+    auto itr = places_in_order.begin();
+    ++itr;
+    for (auto place : places_in_order)
+    {
+        if(place.first < itr->first and itr != places_in_order.end())
+        {
+            place_IDs_in_order.push_back(place.second.first);
+        }
+        else
+        {
+            if (itr == places_in_order.end())
+            {
+                place_IDs_in_order.push_back(place.second.first);
+            }
+            else if(place.second.second < itr->second.second)
+            {
+                place_IDs_in_order.push_back(place.second.first);
+            }
+            else if(itr->second.second < place.second.second)
+            {
+                place_IDs_in_order.push_back(itr->second.first);
+            }
+            else
+            {
+                place_IDs_in_order.push_back(place.second.first);
+            }
+        }
+        ++itr;
+    }
+
+    // PALAA TÄHÄN VIELÄ, EI VÄLTTÄMÄTTÄ TOIMI HALUTULLA
+    // TAVALLA YLEISESTI, MIKÄLI SAMAN ETÄISYYDEN OMAAVIA,
+    // MUTTA LUKUISIA ERI Y-KOORDINAATIN PAIKKOJA ON MONIA.
+
+    return place_IDs_in_order;
 }
 
 std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
