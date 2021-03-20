@@ -111,12 +111,15 @@ public:
     // which brings the coefficient 2.
     void clear_all();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Linear. O(n).
+    // Short rationale for estimate: Processing data through for-loop cause it
+    // to be a linear operation. In the "best case", if the datastructure is empty, it may
+    // be a constant operation.
     std::vector<PlaceID> all_places();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: Theta(1), worst-case: O(n).
+    // Short rationale for estimate: unordered_map.insert() is being used here,
+    // which is constant on average, but in worst-case O(n). Other opeartions used here are constant.
     bool add_place(PlaceID id, Name const& name, PlaceType type, Coord xy);
 
     // Estimate of performance:

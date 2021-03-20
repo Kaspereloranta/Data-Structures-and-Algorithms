@@ -48,6 +48,7 @@ void Datastructures::clear_all()
 std::vector<PlaceID> Datastructures::all_places()
 {
     //TÄTÄ KANNATTAA YRITTÄÄ HIENOSÄÄTÄÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA
+    // TOISAALTA TÄMÄ EI OLE MUKANA TEHOKKUUSTESTEISSÄ.
 
     std::vector<PlaceID> placeIDs;
     for(auto place : places_)
