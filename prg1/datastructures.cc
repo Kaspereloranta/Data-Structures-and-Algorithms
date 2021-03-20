@@ -78,6 +78,8 @@ std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
     // sanotaan, että poikkeuskäsittely olisi raskas operaatio. Toisaalta
     // tätä operaatiota kutsuttaessa ohjelmaa normaalisti käytettäessä
     // poikkeuksia ei pitäisi suurimmassa osassa kertoja tapahtua.
+    // Olisi myös hölmöä ja epätehokasta erikseen etsiä ja varmistaa löytyykö alkio tietorakenteesa,
+    // kun sen voi olettaa löytyvän sieltä useimmissa tapauksissa.
 
     try
     {
@@ -93,8 +95,21 @@ std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
 
 Coord Datastructures::get_place_coord(PlaceID id)
 {
-    // Replace this comment with your implementation
-    return NO_COORD;
+    // tätä operaatiota kutsuttaessa ohjelmaa normaalisti käytettäessä
+    // poikkeuksia ei pitäisi suurimmassa osassa kertoja tapahtua.
+    // Olisi myös hölmöä ja epätehokasta erikseen etsiä ja varmistaa
+    // löytyykö alkio tietorakenteesa, kun sen voi olettaa löytyvän sieltä
+    // useimmissa tapauksissa.
+
+    try
+    {
+        return places_.at(id).location; // .at() complexity: average constant, worst-case: O(n).
+    }
+
+    catch(std::out_of_range const& error)
+    {
+         return NO_COORD;
+    }
 }
 
 bool Datastructures::add_area(AreaID id, const Name &name, std::vector<Coord> coords)

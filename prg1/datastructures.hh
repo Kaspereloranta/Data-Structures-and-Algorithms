@@ -133,8 +133,14 @@ public:
     // throws exceptions rarely.
     std::pair<Name, PlaceType> get_place_name_type(PlaceID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: Constant, Theta(1). Worst-Case O(n) plus
+    // the inefficiencies that exception handling causes.
+    // Short rationale for estimate: On most cases we can assume that the place of interest
+    // exist and is stored in places_. If this is the case this operation won't throw
+    // any exceptions, just returns places coordinates by using at() for unordered map, which
+    // is constant on average, but O(n) in worst case. In worst-case, the exception is thrown
+    // which may cause some inefficiencies to this operation but we can assume that this
+    // operation throws exceptions rarely.
     Coord get_place_coord(PlaceID id);
 
     // We recommend you implement the operations below only after implementing the ones above
