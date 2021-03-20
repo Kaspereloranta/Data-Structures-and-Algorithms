@@ -11,7 +11,7 @@
 #include <functional>
 #include <unordered_set>
 #include <unordered_map>
-
+#include <map>
 
 // Types for IDs
 using PlaceID = long int;
@@ -145,8 +145,13 @@ public:
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n * log(n) + n)
+    // Short rationale for estimate: In the first for-loop
+    // we insert elements to map, which's complexity is O(log n). And
+    // we are doing that n times due to for-loop. On the second
+    // for-loop we add sorted placeIDs to vector using push_back(), which's
+    // complexity is constant ( O(1)). But the second for-loop brings the
+    // coefficient of 2 to the performance.
     std::vector<PlaceID> places_alphabetically();
 
     // Estimate of performance:

@@ -140,8 +140,24 @@ void Datastructures::creation_finished()
 
 std::vector<PlaceID> Datastructures::places_alphabetically()
 {
-    // Replace this comment with your implementation
-    return {};
+    std::map<Name,PlaceID> placesInAlphabeticalOrder;
+
+   // for-loop complexity: O(n)
+    for (auto place : places_)
+    {
+        placesInAlphabeticalOrder.insert({place.second.placeName,place.first}); // .insert() for map complexity: O(log n)
+    }
+
+    // now places are in alphabetical order since map sorts them.
+    std::vector<PlaceID> placeIDsInOrder;
+
+    // for loop complexity: O(n)
+    for (auto place : placesInAlphabeticalOrder)
+    {
+        placeIDsInOrder.push_back(place.second); // push_back() is constant in time. O(1).
+    }
+
+    return placeIDsInOrder;
 }
 
 std::vector<PlaceID> Datastructures::places_coord_order()
