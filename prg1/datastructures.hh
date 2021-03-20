@@ -80,7 +80,7 @@ Distance const NO_DISTANCE = NO_VALUE;
 struct Place
 {
     Name placeName;
-    PlaceType type;
+    PlaceType place;
     Coord location;
 };
 
@@ -117,13 +117,20 @@ public:
     // be a constant operation.
     std::vector<PlaceID> all_places();
 
-    // Estimate of performance: Average: Theta(1), worst-case: O(n).
+    // Estimate of performance: Average: Constant, Theta(1), worst-case: O(n).
     // Short rationale for estimate: unordered_map.insert() is being used here,
     // which is constant on average, but in worst-case O(n). Other opeartions used here are constant.
     bool add_place(PlaceID id, Name const& name, PlaceType type, Coord xy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: Constant, Theta(1). Worst-case 2*O(n) plus
+    // the inefficiencies that exception handling causes.
+    // Short rationale for estimate: On most cases we can assume that the
+    // place exists in datastructure places_. If that's the case, this function
+    // won't throw any exceptions and only returns pair of values of interest by using
+    // make_pair() and at() which are both constant operations averagely, but at(), may be
+    // linear in the worst case. In the worst case the exception is thrown, whereas
+    // exception handling causes some inefficiencies, but we can assume that this operation
+    // throws exceptions rarely.
     std::pair<Name, PlaceType> get_place_name_type(PlaceID id);
 
     // Estimate of performance:

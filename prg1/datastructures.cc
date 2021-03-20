@@ -50,24 +50,45 @@ std::vector<PlaceID> Datastructures::all_places()
     //TÄTÄ KANNATTAA YRITTÄÄ HIENOSÄÄTÄÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA
     // TOISAALTA TÄMÄ EI OLE MUKANA TEHOKKUUSTESTEISSÄ.
 
+    // voi ehkä miettiä std::transform() tähän, mutta se taitaa tuottaa myös
+    // lineaarisen operaation
+
     std::vector<PlaceID> placeIDs;
     for(auto place : places_)
     {
-        placeIDs.push_back(place.first);
+        placeIDs.push_back(place.first); // push_back() is constant on complexity.
     }
     return placeIDs;
 }
 
 bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coord xy)
 {
-    // Replace this comment with your implementation
-    return false;
+    Place newPlace = {name, type, xy};
+    auto result = places_.insert(std::make_pair(id,newPlace)); // insert() complexity: average theta(1), worst-case: O(n).
+                                                               // make_pair() complexity: constant. (theta(1)).
+
+    // if places_ already include an element with same key (PlaceID), insert() does not add anything to places_.
+
+    return result.second; // result.second is now a bool value which tells whether the insertion above was successfull or not.
 }
 
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
 {
-    // Replace this comment with your implementation
-    return {NO_NAME, PlaceType::NO_TYPE};
+    // tähän voisi ehkä kysyä assarin mielipidettä, koska Olioiden ohjelmointi C++:lla
+    // sanotaan, että poikkeuskäsittely olisi raskas operaatio. Toisaalta
+    // tätä operaatiota kutsuttaessa ohjelmaa normaalisti käytettäessä
+    // poikkeuksia ei pitäisi suurimmassa osassa kertoja tapahtua.
+
+    try
+    {
+        return std::make_pair(places_.at(id).placeName,places_.at(id).place); // .at() complexity: average constant, worst-case: O(n).
+    }
+
+    catch(std::out_of_range const& error)
+    {
+        return {NO_NAME, PlaceType::NO_TYPE};
+
+    }
 }
 
 Coord Datastructures::get_place_coord(PlaceID id)
