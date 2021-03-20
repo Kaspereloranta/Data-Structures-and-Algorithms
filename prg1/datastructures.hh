@@ -122,25 +122,16 @@ public:
     // which is constant on average, but in worst-case O(n). Other opeartions used here are constant.
     bool add_place(PlaceID id, Name const& name, PlaceType type, Coord xy);
 
-    // Estimate of performance: Average: Constant, Theta(1). Worst-case 2*O(n) plus
-    // the inefficiencies that exception handling causes.
-    // Short rationale for estimate: On most cases we can assume that the
-    // place exists in datastructure places_. If that's the case, this function
-    // won't throw any exceptions and only returns pair of values of interest by using
-    // make_pair() and at() which are both constant operations averagely, but at(), may be
-    // linear in the worst case. In the worst case the exception is thrown, whereas
-    // exception handling causes some inefficiencies, but we can assume that this operation
-    // throws exceptions rarely.
+    // Estimate of performance: Average: Constant, Theta(1). Worst-case 2*O(n).
+    // Short rationale for estimate: find() is being used here for unordered_map
+    // which's complexity is constant on average but may be O(n) in the worst case.
+    // at() is also used for unordered_map, which's complexity is similar than find()'s.
     std::pair<Name, PlaceType> get_place_name_type(PlaceID id);
 
-    // Estimate of performance: Average: Constant, Theta(1). Worst-Case O(n) plus
-    // the inefficiencies that exception handling causes.
-    // Short rationale for estimate: On most cases we can assume that the place of interest
-    // exist and is stored in places_. If this is the case this operation won't throw
-    // any exceptions, just returns places coordinates by using at() for unordered map, which
-    // is constant on average, but O(n) in worst case. In worst-case, the exception is thrown
-    // which may cause some inefficiencies to this operation but we can assume that this
-    // operation throws exceptions rarely.
+    // Estimate of performance: Average: Constant, Theta(1). Worst-Case 2*O(n)
+    // Short rationale for estimate: find() is being used here for unordered_map
+    // which's complexity is constant on average but may be O(n) in the worst case.
+    // at() is also used for unordered_map, which's complexity is similar than find()'s.
     Coord get_place_coord(PlaceID id);
 
     // We recommend you implement the operations below only after implementing the ones above

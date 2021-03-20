@@ -73,43 +73,28 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
 }
 
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
-{
-    // tähän voisi ehkä kysyä assarin mielipidettä, koska Olioiden ohjelmointi C++:lla
-    // sanotaan, että poikkeuskäsittely olisi raskas operaatio. Toisaalta
-    // tätä operaatiota kutsuttaessa ohjelmaa normaalisti käytettäessä
-    // poikkeuksia ei pitäisi suurimmassa osassa kertoja tapahtua.
-    // Olisi myös hölmöä ja epätehokasta erikseen etsiä ja varmistaa löytyykö alkio tietorakenteesa,
-    // kun sen voi olettaa löytyvän sieltä useimmissa tapauksissa.
+{    
 
-    try
-    {
-        return std::make_pair(places_.at(id).placeName,places_.at(id).place); // .at() complexity: average constant, worst-case: O(n).
-    }
-
-    catch(std::out_of_range const& error)
+    std::unordered_map<PlaceID,Place>::const_iterator placeIt = places_.find(id); // Complexity of find(): Average: constant ( Theta(1))
+                                                                                  // Worst case: Linear. O(n)
+    if (placeIt == places_.end())
     {
         return {NO_NAME, PlaceType::NO_TYPE};
-
     }
+
+    return std::make_pair(places_.at(id).placeName,places_.at(id).place); // .at() complexity: average constant, worst-case: O(n).
 }
 
 Coord Datastructures::get_place_coord(PlaceID id)
 {
-    // tätä operaatiota kutsuttaessa ohjelmaa normaalisti käytettäessä
-    // poikkeuksia ei pitäisi suurimmassa osassa kertoja tapahtua.
-    // Olisi myös hölmöä ja epätehokasta erikseen etsiä ja varmistaa
-    // löytyykö alkio tietorakenteesa, kun sen voi olettaa löytyvän sieltä
-    // useimmissa tapauksissa.
-
-    try
+    std::unordered_map<PlaceID,Place>::const_iterator placeIt = places_.find(id); // Complexity of find(): Average: constant ( Theta(1))
+                                                                                  // Worst case: Linear. O(n).
+    if (placeIt == places_.end())
     {
-        return places_.at(id).location; // .at() complexity: average constant, worst-case: O(n).
+        return NO_COORD;
     }
 
-    catch(std::out_of_range const& error)
-    {
-         return NO_COORD;
-    }
+    return places_.at(id).location; // .at() complexity: average constant (Theta(1)), worst-case: O(n).
 }
 
 bool Datastructures::add_area(AreaID id, const Name &name, std::vector<Coord> coords)
@@ -140,6 +125,8 @@ void Datastructures::creation_finished()
 
 std::vector<PlaceID> Datastructures::places_alphabetically()
 {
+    // TÄMÄN TEHOKKUUTTA EHKÄ SYYTÄ HIOA VIELÄ
+
     std::map<Name,PlaceID> placesInAlphabeticalOrder;
 
    // for-loop complexity: O(n)
