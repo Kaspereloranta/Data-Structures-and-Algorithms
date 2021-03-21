@@ -208,8 +208,12 @@ public:
     // here.
     std::vector<Coord> get_area_coords(AreaID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Linear. Theta(n)
+    // Short rationale for estimate: For-loop
+    // causes it to be Theta(n), since it loops alwayas
+    // as many times there are elements in areas_.
+    // push_back() for vector is constant which
+    // is also being used here.
     std::vector<AreaID> all_areas();
 
     // Estimate of performance:

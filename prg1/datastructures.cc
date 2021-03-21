@@ -259,8 +259,12 @@ bool Datastructures::change_place_coord(PlaceID id, Coord newcoord)
 
 std::vector<AreaID> Datastructures::all_areas()
 {
-    // Replace this comment with your implementation
-    return {};
+    std::vector<AreaID> areaIDs;
+    for (auto area : areas_)
+    {
+        areaIDs.push_back(area.first);
+    }
+    return areaIDs;
 }
 
 bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
