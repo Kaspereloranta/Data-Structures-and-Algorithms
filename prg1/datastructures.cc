@@ -150,45 +150,54 @@ std::vector<PlaceID> Datastructures::places_alphabetically()
 
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
-    // Let's use multimap to sort places based on their location and
-    // store their PlaceIDs and y-coordinates as well for later inspection.
-    std::multimap<double,std::pair<int,PlaceID>> places_in_order;
+    // Let's use multimap to sort places based on their location.
+    // lets use strucutre map<double,map<int,PlaceID>>
+    // because there might be places with same distance from origo
+    // but with different y-coordinates. double is distance from origo,
+    // int is y-coordinate.
+
+    std::map<double,std::multimap<int,PlaceID>> places_in_order;
+
     // for-loop complexity: O(n)
     for (auto place : places_)
     {
-        places_in_order.insert({sqrt(pow(place.second.location.x,2)+pow(place.second.location.y,2))
-                                ,std::make_pair(place.second.location.y,place.first)});  // multiset.insert() complexity: O(log n)
-    }
+        double distance = sqrt(pow(place.second.location.x,2)+pow(place.second.location.y,2));
 
-    // now places are in order based on their distance from origo in the multimap above
-    // but places with the exactly same distance may be (?) tumbled.
+        if (places_in_order.find(distance) != places_in_order.end())        // map.find() complexity O(log n)
+        {
+            places_in_order.at(distance).insert(std::make_pair(place.second.location.y,place.first));
+        }
+        else                                                                      // map.insert() complexity: O(log n)
+        {
+            places_in_order[distance] = {std::make_pair(place.second.location.y,place.first)};
+        }
+    }
 
     std::vector<PlaceID> place_IDs_in_order;
-    int y;
-    double dist;
 
-    // let's add PlaceIDs to vector based on places' distance from origo.
     for (auto place : places_in_order)
     {
-
-        if(dist == place.first and y < place.second.first)
+        if (place.second.size()==1)
         {
-            qDebug() << "Oikein menee";
+            place_IDs_in_order.push_back(place.second.begin()->second);
+            qDebug() << " Uniikki etäisyys:" << place.first << " y-koord: " << place.second.begin()->first;
         }
-        else if(dist == place.first and y > place.second.first)
+        else
         {
-            qDebug() << "Väärin menee";
-        }
+            for(auto place_with_same_distance : place.second)
+            {
+                place_IDs_in_order.push_back(place_with_same_distance.second);  // Averagely should not need many for-loops here
+                qDebug() << "Etäisyys:" << place.first
+                         << " y-koord: " << place_with_same_distance.first;
+            }                                                                   // so even this for-loop inside a for-loop
+        }                                                                       // harms the asymptotic efficiency, it harms
+                                                                                // the worst case only, averagely I'd say that
+    }                                                                           // the efficiency of this whole operation is O(n log n)
+                                                                                // while the worst-case is O(n^2)
+    // PALAA TÄHÄN VIELÄ, VOI OLLA TEHOKKAAMPIAKIN TAPOJA TOTEUTTAA TÄMÄ
 
-        place_IDs_in_order.push_back(place.second.second);
-        dist = place.first;
-        y = place.second.first;
+    qDebug() << "paikkoja yhteensä järjestyksen jälkeen vectorissa " << place_IDs_in_order.size();
 
-    }
-
-    // PALAA TÄHÄN VIELÄ, EI VÄLTTÄMÄTTÄ TOIMI HALUTULLA
-    // TAVALLA YLEISESTI, MIKÄLI SAMAN ETÄISYYDEN OMAAVIA,
-    // MUTTA LUKUISIA ERI Y-KOORDINAATIN PAIKKOJA ON MONIA.
 
     return place_IDs_in_order;
 }

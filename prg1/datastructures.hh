@@ -146,10 +146,16 @@ public:
     // coefficient of 2 to the performance.
     std::vector<PlaceID> places_alphabetically();
 
-    // Estimate of performance: O(n * log(n) + n) ~ O(n*log(n))
-    // Short rationale for estimate: Usage of insert() for multimap
-    // inside the for loop causes the factor n*log(n) and the
-    // later for-loop causes the factor n.
+    // Estimate of performance: Average: 2*n*log(n)+n ~~ n*log(n)
+    // Worst case: O(n^2)
+    // Short rationale for estimate: Usage of insert() and find() for map
+    // inside the for loop causes the factor 2*n*log(n) and the
+    // later for-loop causes the factor n on average case, which
+    // can be approximated to be O(n*log(n)). However, O(n^2) is
+    // the worst case scenario, although it should be rare.
+    // For-loop inside a for-loop causes O(n^2), which is used
+    // to  add places with same distance but different y-coordinate
+    // to vector.
     std::vector<PlaceID> places_coord_order();
 
     // Estimate of performance:
