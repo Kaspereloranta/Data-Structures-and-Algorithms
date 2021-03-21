@@ -150,6 +150,8 @@ std::vector<PlaceID> Datastructures::places_alphabetically()
 
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
+    // PALAA TÄHÄN VIELÄ, VOI OLLA TEHOKKAAMPIAKIN TAPOJA TOTEUTTAA TÄMÄ
+
     // Let's use multimap to sort places based on their location.
     // lets use strucutre map<double,map<int,PlaceID>>
     // because there might be places with same distance from origo
@@ -197,14 +199,32 @@ std::vector<PlaceID> Datastructures::places_coord_order()
 
 std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
 {
-    // Replace this comment with your implementation
-    return {};
+    std::vector<PlaceID> places_with_name;
+
+    // for-loop makes this operation linear.
+    for(auto place : places_)
+    {
+        if(place.second.placeName == name)
+        {
+            places_with_name.push_back(place.first); //push_back() complexity: constant.
+        }
+    }
+    return places_with_name;
 }
 
 std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
 {
-    // Replace this comment with your implementation
-    return {};
+    std::vector<PlaceID> places_with_right_type;
+
+    // for-loop makes this operation linear.
+    for(auto place : places_)
+    {
+        if(place.second.place == type)
+        {
+            places_with_right_type.push_back(place.first); //push_back() complexity: constant.
+        }
+    }
+    return places_with_right_type;
 }
 
 bool Datastructures::change_place_name(PlaceID id, const Name& newname)
