@@ -229,7 +229,11 @@ std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
 
 bool Datastructures::change_place_name(PlaceID id, const Name& newname)
 {
-    // Replace this comment with your implementation
+    if (places_.find(id) != places_.end())
+    {
+        places_.at(id).placeName = newname;
+        return true;
+    }
     return false;
 }
 

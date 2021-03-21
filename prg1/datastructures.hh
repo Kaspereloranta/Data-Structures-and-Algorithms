@@ -167,12 +167,19 @@ public:
     // their names.
     std::vector<PlaceID> find_places_name(Name const& name);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Theta(n)
+    // Short rationale for estimate: For-loop causes it to
+    // be a linear operation, push_back() doesn't affect to
+    // efficiency, since it is a constant operation. It is
+    // exactly theta(n) (nor big-O or Omega), because
+    // for-loop has to go through all the places in places_ to check
+    // their types.
     std::vector<PlaceID> find_places_type(PlaceType type);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: Linear, Theta(1). Worst-case:  O(n)
+    // Short rationale for estimate: This function uses uses .find() and
+    // .at() for unordered_map, which are both constant on average, but on
+    // worst-case they are linear.
     bool change_place_name(PlaceID id, Name const& newname);
 
     // Estimate of performance:
