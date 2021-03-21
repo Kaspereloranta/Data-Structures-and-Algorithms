@@ -180,25 +180,18 @@ std::vector<PlaceID> Datastructures::places_coord_order()
         if (place.second.size()==1)
         {
             place_IDs_in_order.push_back(place.second.begin()->second);
-            qDebug() << " Uniikki etäisyys:" << place.first << " y-koord: " << place.second.begin()->first;
         }
         else
         {
             for(auto place_with_same_distance : place.second)
             {
                 place_IDs_in_order.push_back(place_with_same_distance.second);  // Averagely should not need many for-loops here
-                qDebug() << "Etäisyys:" << place.first
-                         << " y-koord: " << place_with_same_distance.first;
             }                                                                   // so even this for-loop inside a for-loop
         }                                                                       // harms the asymptotic efficiency, it harms
                                                                                 // the worst case only, averagely I'd say that
     }                                                                           // the efficiency of this whole operation is O(n log n)
                                                                                 // while the worst-case is O(n^2)
     // PALAA TÄHÄN VIELÄ, VOI OLLA TEHOKKAAMPIAKIN TAPOJA TOTEUTTAA TÄMÄ
-
-    qDebug() << "paikkoja yhteensä järjestyksen jälkeen vectorissa " << place_IDs_in_order.size();
-
-
     return place_IDs_in_order;
 }
 

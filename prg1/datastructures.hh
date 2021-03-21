@@ -158,8 +158,13 @@ public:
     // to vector.
     std::vector<PlaceID> places_coord_order();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Theta(n)
+    // Short rationale for estimate: For-loop causes it to
+    // be a linear operation, push_back() doesn't affect to
+    // efficiency, since it is a constant operation. It is
+    // exactly theta(n) (nor big-O or Omega), because
+    // for-loop has to go through all the places to check
+    // their names.
     std::vector<PlaceID> find_places_name(Name const& name);
 
     // Estimate of performance:
