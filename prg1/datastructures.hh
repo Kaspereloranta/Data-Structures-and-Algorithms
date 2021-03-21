@@ -88,9 +88,9 @@ struct Place
 struct Area
 {
     Name areaName;
-    std::unordered_multiset<Coord, CoordHash> shape;
+    std::vector<Coord> shape;
     bool isSubArea; // may be useless
-    PlaceID upperAreaID; // the upper area's ID
+    // PlaceID upperAreaID; // the upper area's ID
 };
 
 // This is the class you are supposed to implement
@@ -190,8 +190,10 @@ public:
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: constant, theta(1). Worst-case: O(n).
+    // Short rationale for estimate: insert() is being used here for
+    // unordered_map, which is constant on average but its worst_case is O(n).
+    // All other operations used here are constant.
     bool add_area(AreaID id, Name const& name, std::vector<Coord> coords);
 
     // Estimate of performance:
@@ -239,9 +241,8 @@ public:
 private:
     // Add stuff needed for your class implementation here
 
-
-    std::unordered_map<PlaceID,Place> places_;       //key of the map is int ID of the place
-    std::unordered_map<AreaID,Area> areas_;         //key of the map is int ID of the area
+    std::unordered_map<PlaceID,Place> places_;
+    std::unordered_map<AreaID,Area> areas_;
 };
 
 #endif // DATASTRUCTURES_HH

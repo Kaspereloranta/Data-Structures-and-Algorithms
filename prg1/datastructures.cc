@@ -100,8 +100,12 @@ Coord Datastructures::get_place_coord(PlaceID id)
 
 bool Datastructures::add_area(AreaID id, const Name &name, std::vector<Coord> coords)
 {
-    // Replace this comment with your implementation
-    return false;
+    Area new_area = {name,coords,false};
+    auto result = areas_.insert(std::make_pair(id,new_area)); // insert() complexity: average theta(1), worst-case: O(n).
+                                                              // make_pair() complexity: constant. (theta(1)).
+
+    // if areas_ already include an element with same key (AreaID), insert() does not add anything to areas_.
+    return result.second; // result.second is now a bool value which tells whether the insertion above was successfull or not.
 }
 
 Name Datastructures::get_area_name(AreaID id)
