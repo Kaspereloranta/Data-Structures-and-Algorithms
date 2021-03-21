@@ -119,7 +119,10 @@ Name Datastructures::get_area_name(AreaID id)
 
 std::vector<Coord> Datastructures::get_area_coords(AreaID id)
 {
-    // Replace this comment with your implementation
+    if(areas_.find(id) != areas_.end())
+    {
+        return areas_.at(id).shape;
+    }
     return {NO_COORD};
 }
 

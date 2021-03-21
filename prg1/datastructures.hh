@@ -202,8 +202,10 @@ public:
     // here.
     Name get_area_name(AreaID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: constant,  theta(1). Worst-case: O(n).
+    // Short rationale for estimate: .at() and .find() are both averagely
+    // constant and linear in worst case and only those operations are used
+    // here.
     std::vector<Coord> get_area_coords(AreaID id);
 
     // Estimate of performance:
