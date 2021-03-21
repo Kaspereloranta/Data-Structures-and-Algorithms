@@ -110,7 +110,10 @@ bool Datastructures::add_area(AreaID id, const Name &name, std::vector<Coord> co
 
 Name Datastructures::get_area_name(AreaID id)
 {
-    // Replace this comment with your implementation
+    if(areas_.find(id) != areas_.end())
+    {
+        return areas_.at(id).areaName;
+    }
     return NO_NAME;
 }
 

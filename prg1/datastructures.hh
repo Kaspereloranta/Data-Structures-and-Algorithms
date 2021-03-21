@@ -196,8 +196,10 @@ public:
     // All other operations used here are constant.
     bool add_area(AreaID id, Name const& name, std::vector<Coord> coords);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: constant,  theta(1). Worst-case: O(n).
+    // Short rationale for estimate: .at() and .find() are both averagely
+    // constant and linear in worst case and only those operations are used
+    // here.
     Name get_area_name(AreaID id);
 
     // Estimate of performance:
