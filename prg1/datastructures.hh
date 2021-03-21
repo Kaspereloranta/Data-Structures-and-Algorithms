@@ -176,14 +176,16 @@ public:
     // their types.
     std::vector<PlaceID> find_places_type(PlaceType type);
 
-    // Estimate of performance: Average: Linear, Theta(1). Worst-case:  O(n)
+    // Estimate of performance: Average: Constant, Theta(1). Worst-case:  O(n)
     // Short rationale for estimate: This function uses uses .find() and
     // .at() for unordered_map, which are both constant on average, but on
     // worst-case they are linear.
     bool change_place_name(PlaceID id, Name const& newname);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: Constant, Theta(1). Worst-case:  O(n)
+    // Short rationale for estimate: This function uses uses .find() and
+    // .at() for unordered_map, which are both constant on average, but on
+    // worst-case they are linear.
     bool change_place_coord(PlaceID id, Coord newcoord);
 
     // We recommend you implement the operations below only after implementing the ones above
