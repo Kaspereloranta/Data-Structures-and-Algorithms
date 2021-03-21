@@ -9,6 +9,7 @@
 #include <utility>
 #include <limits>
 #include <functional>
+#include <stack>
 #include <unordered_set>
 #include <unordered_map>
 #include <map>
@@ -89,8 +90,9 @@ struct Area
 {
     Name areaName;
     std::vector<Coord> shape;
-    bool isSubArea; // may be useless
-    // PlaceID upperAreaID; // the upper area's ID
+    bool isSubArea;
+    AreaID parentAreaID;
+    std::unordered_set<PlaceID> childrenAreas;
 };
 
 // This is the class you are supposed to implement
@@ -216,8 +218,11 @@ public:
     // is also being used here.
     std::vector<AreaID> all_areas();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Average: Constant, Theta(1). Worst-case: O(n)
+    // Short rationale for estimate: .at() and .find() are
+    // used here for unordered_map and .insert() is being used for unordered_set.
+    // all of those operations are averagely constant on complexity, but their
+    // worst-case is O(n).
     bool add_subarea_to_area(AreaID id, AreaID parentid);
 
     // Estimate of performance:
@@ -248,6 +253,8 @@ public:
 
 private:
     // Add stuff needed for your class implementation here
+
+    AreaID get_parent_area_id(AreaID id);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;

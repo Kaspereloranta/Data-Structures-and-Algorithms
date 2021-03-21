@@ -100,7 +100,10 @@ Coord Datastructures::get_place_coord(PlaceID id)
 
 bool Datastructures::add_area(AreaID id, const Name &name, std::vector<Coord> coords)
 {
-    Area new_area = {name,coords,false};
+    Area new_area = {name,coords,false,NO_AREA,{}}; // NO_AREA and empty set {} indicates that no parent area are added yet and
+                                                    // that no subareas are added yet. bool-value tells is the are child of some area
+                                                    // which is false at initialization.
+
     auto result = areas_.insert(std::make_pair(id,new_area)); // insert() complexity: average theta(1), worst-case: O(n).
                                                               // make_pair() complexity: constant. (theta(1)).
 
@@ -269,14 +272,51 @@ std::vector<AreaID> Datastructures::all_areas()
 
 bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
 {
-    // Replace this comment with your implementation
+    if(areas_.find(id) != areas_.end() and
+       areas_.find(parentid) != areas_.end())             // find() for unordered_map is constant averagely, worst-case O(n);
+    {
+        if(!areas_.at(id).isSubArea)
+        {
+            areas_.at(parentid).childrenAreas.insert(id); // insertion to unordered_set is constant averagely, worst-case O(n).
+            areas_.at(id).isSubArea = true;               // .at() for unordered_map is similar in complexity.
+            return true;
+        }
+    }
+
     return false;
 }
 
 std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 {
-    // Replace this comment with your implementation
-    return {NO_AREA};
+    if(areas_.find(id)==areas_.end()) // .find() for unordered_map is constant on average, worst-case O(n).
+    {
+        return {NO_AREA};
+    }
+
+    // let's use stack here for assistance to get easy and efficient acces to the latest
+    // area added to vector, which was relative of original area whose id was given
+    // as a parameter
+    std::vector<AreaID> upper_areas;
+    std::stack<std::pair<AreaID,Area>> area_and_upper_areas;
+    area_and_upper_areas.push(std::make_pair(id,areas_.at(id))); // .push() for stack is constant on time, .at() is constant on average,
+    bool keep_looping = true;                                    // worst-case for .at() is O(n).
+
+    // LISÄÄ TÄHÄN HIEMAN SELVENNYSTÄ MYÖHEMMIN
+    // complexity of while-loop: O(n).
+    while(keep_looping)
+    {
+        if(area_and_upper_areas.top().second.parentAreaID != NO_AREA)
+        {
+            upper_areas.push_back(area_and_upper_areas.top().second.parentAreaID); //.push_back() for vector is constant on time averagely, worst-case: O(n).
+            area_and_upper_areas.push(std::make_pair(area_and_upper_areas.top().second.parentAreaID,  // .push() and .top() for stack are constants on time,
+                                                     areas_.at(area_and_upper_areas.top().second.parentAreaID))); // make_pair() is constant as well.
+        }
+        else
+        {
+            keep_looping = false;
+        }
+    }
+    return upper_areas;
 }
 
 std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
@@ -301,4 +341,9 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
     // Replace this comment with your implementation
     return NO_AREA;
+}
+
+AreaID Datastructures::get_parent_area_id(AreaID id)
+{
+    return areas_.at(id).parentAreaID;
 }
