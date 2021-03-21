@@ -74,7 +74,7 @@ bool Datastructures::add_place(PlaceID id, const Name& name, PlaceType type, Coo
 }
 
 std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
-{    
+{
 
     std::unordered_map<PlaceID,Place>::const_iterator placeIt = places_.find(id); // Complexity of find(): Average: constant ( Theta(1))
                                                                                   // Worst case: Linear. O(n)
@@ -152,52 +152,38 @@ std::vector<PlaceID> Datastructures::places_coord_order()
 {
     // Let's use multimap to sort places based on their location and
     // store their PlaceIDs and y-coordinates as well for later inspection.
-    std::multimap<double,std::pair<PlaceID,double>> places_in_order;
+    std::multimap<double,std::pair<int,PlaceID>> places_in_order;
     // for-loop complexity: O(n)
     for (auto place : places_)
     {
         places_in_order.insert({sqrt(pow(place.second.location.x,2)+pow(place.second.location.y,2))
-                                ,std::make_pair(place.first,place.second.location.y)});  // multiset.insert() complexity: O(log n)
+                                ,std::make_pair(place.second.location.y,place.first)});  // multiset.insert() complexity: O(log n)
     }
 
     // now places are in order based on their distance from origo in the multimap above
-    // but places with the exactly same distance may be tumbled.
+    // but places with the exactly same distance may be (?) tumbled.
 
     std::vector<PlaceID> place_IDs_in_order;
-    // let's add PlaceIDs to vector based on places' distance
-    // and make sure that the places with same exact distance
-    // are added to vector in the right order, in which the
-    // place with the lowest y-coordinate will be added first.
+    int y;
+    double dist;
 
-    // for-loop complexity: O(n)
-    auto itr = places_in_order.begin();
-    ++itr;
+    // let's add PlaceIDs to vector based on places' distance from origo.
     for (auto place : places_in_order)
     {
-        if(place.first < itr->first and itr != places_in_order.end())
+
+        if(dist == place.first and y < place.second.first)
         {
-            place_IDs_in_order.push_back(place.second.first);
+            qDebug() << "Oikein menee";
         }
-        else
+        else if(dist == place.first and y > place.second.first)
         {
-            if (itr == places_in_order.end())
-            {
-                place_IDs_in_order.push_back(place.second.first);
-            }
-            else if(place.second.second < itr->second.second)
-            {
-                place_IDs_in_order.push_back(place.second.first);
-            }
-            else if(itr->second.second < place.second.second)
-            {
-                place_IDs_in_order.push_back(itr->second.first);
-            }
-            else
-            {
-                place_IDs_in_order.push_back(place.second.first);
-            }
+            qDebug() << "Väärin menee";
         }
-        ++itr;
+
+        place_IDs_in_order.push_back(place.second.second);
+        dist = place.first;
+        y = place.second.first;
+
     }
 
     // PALAA TÄHÄN VIELÄ, EI VÄLTTÄMÄTTÄ TOIMI HALUTULLA
