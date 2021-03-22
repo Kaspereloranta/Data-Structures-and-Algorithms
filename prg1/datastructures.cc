@@ -342,7 +342,7 @@ std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 
 bool Datastructures::remove_place(PlaceID id)
 {
-    auto result = areas_.erase(id);
+    auto result = places_.erase(id);
     return result; // if erase was successful, result == 1,
                    // otherwise (id not found), result == 0.
 }
