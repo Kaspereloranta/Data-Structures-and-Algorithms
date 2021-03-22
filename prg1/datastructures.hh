@@ -225,8 +225,11 @@ public:
     // worst-case is O(n).
     bool add_subarea_to_area(AreaID id, AreaID parentid);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: While-loop used here
+    // causes to be O(n) on complexity. Other operations used
+    // in this function are all constant on time averagely. (but
+    // some of their worst cases are linear as well.)
     std::vector<AreaID> subarea_in_areas(AreaID id);
 
     // Non-compulsory operations
@@ -253,8 +256,6 @@ public:
 
 private:
     // Add stuff needed for your class implementation here
-
-    AreaID get_parent_area_id(AreaID id);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;

@@ -289,7 +289,7 @@ bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
 
 std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 {
-    if(areas_.find(id)==areas_.end()) // .find() for unordered_map is constant on average, worst-case O(n).
+    if(areas_.find(id)==areas_.end()) // .find() and .end() for unordered_map is constant on average, worst-case O(n).
     {
         return {NO_AREA};
     }
@@ -301,18 +301,32 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 
     // let's use stack here for assistance to get easy and efficient acces to the latest
     // area added to vector, which was ancestor of an original area whose id was given
-    // as a parameter
+    // as a parameter.
+
+    // by doing so, we do not have to add the original area itself to vector at all
+    // which will be returned from this operation. If we did that, we would have
+    // to delete the first element from the vector in the end. Deleting the first element
+    // from vector is a linear operation, so this operation is more efficient if we can
+    // avoid doing so.
+
+    // and using stack also simplifies the while loop below, since we can
+    // use only one if-else structure by using stack
 
     // complexity of while-loop: O(n).
+    // on most cases it is more efficient than linear, since the areas make up
+    // a tree-struct. The while loop below would be linear only if every area
+    // had only one child maximum. (Tree would not have any branches)
     while(keep_looping)
     {
         if(area_and_upper_areas.top().second.parentAreaID != NO_AREA)
         {
-            upper_areas.push_back(area_and_upper_areas.top().second.parentAreaID); //.push_back() for vector is constant on time averagely, worst-case: O(n).
-            area_and_upper_areas.push(std::make_pair(area_and_upper_areas.top().second.parentAreaID,  // .push() and .top() for stack are constants on time,
-                                                     areas_.at(area_and_upper_areas.top().second.parentAreaID))); // make_pair() is constant as well.
-        }
-        else
+            upper_areas.push_back(area_and_upper_areas.top().second.parentAreaID); // parent found, let's store it to vector
+            area_and_upper_areas.push(std::make_pair(area_and_upper_areas.top().second.parentAreaID,  // let's store the parent to stack as well,
+                                                     areas_.at(area_and_upper_areas.top().second.parentAreaID))); // in order to get access to it easily
+                                                                                                                  // on next while-loop round.
+                                                     //.push_back() for vector is constant on time averagely, worst-case: O(n).
+        }                                            // .push() and .top() for stack are constants on time,
+        else                                         // make_pair() is constant as well.
         {
             keep_looping = false;
         }
