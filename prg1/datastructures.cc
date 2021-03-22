@@ -279,6 +279,7 @@ bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
         {
             areas_.at(parentid).childrenAreas.insert(id); // insertion to unordered_set is constant averagely, worst-case O(n).
             areas_.at(id).isSubArea = true;               // .at() for unordered_map is similar in complexity.
+            areas_.at(id).parentAreaID = parentid;
             return true;
         }
     }
@@ -293,15 +294,15 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
         return {NO_AREA};
     }
 
-    // let's use stack here for assistance to get easy and efficient acces to the latest
-    // area added to vector, which was relative of original area whose id was given
-    // as a parameter
     std::vector<AreaID> upper_areas;
     std::stack<std::pair<AreaID,Area>> area_and_upper_areas;
     area_and_upper_areas.push(std::make_pair(id,areas_.at(id))); // .push() for stack is constant on time, .at() is constant on average,
     bool keep_looping = true;                                    // worst-case for .at() is O(n).
 
-    // LISÄÄ TÄHÄN HIEMAN SELVENNYSTÄ MYÖHEMMIN
+    // let's use stack here for assistance to get easy and efficient acces to the latest
+    // area added to vector, which was ancestor of an original area whose id was given
+    // as a parameter
+
     // complexity of while-loop: O(n).
     while(keep_looping)
     {
@@ -341,9 +342,4 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
     // Replace this comment with your implementation
     return NO_AREA;
-}
-
-AreaID Datastructures::get_parent_area_id(AreaID id)
-{
-    return areas_.at(id).parentAreaID;
 }
