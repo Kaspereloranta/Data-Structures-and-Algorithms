@@ -246,8 +246,11 @@ public:
     // Short rationale for estimate:
     std::vector<PlaceID> places_closest_to(Coord xy, PlaceType type);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Constant. Theta(1).
+    // Short rationale for estimate: .erase() is being
+    // used only here for unordered_map, which is linear in the
+    // number of elements removed, and we are only removing one element
+    // here, which makes this operation to be constant on time.
     bool remove_place(PlaceID id);
 
     // Estimate of performance:

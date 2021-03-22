@@ -342,14 +342,17 @@ std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 
 bool Datastructures::remove_place(PlaceID id)
 {
-    // Replace this comment with your implementation
-    return false;
+    auto result = areas_.erase(id);
+    return result; // if erase was successful, result == 1,
+                   // otherwise (id not found), result == 0.
 }
 
 std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 {
-    // Replace this comment with your implementation
-    return {NO_AREA};
+    if(areas_.find(id)==areas_.end()) // .find() and .end() for unordered_map is constant on average, worst-case O(n).
+    {
+        return {NO_AREA};
+    }    return {NO_AREA};
 }
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
