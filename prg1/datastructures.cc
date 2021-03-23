@@ -381,7 +381,7 @@ void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_alre
         }
         for(auto subarea : areas_.at(id).childrenAreas)
         {
-            subareas_already_added.push_back(id);
+            subareas_already_added.push_back(subarea);
             get_subareas_(subarea,subareas_already_added,is_first_round);
         }
     }

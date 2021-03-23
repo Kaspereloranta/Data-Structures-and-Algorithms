@@ -273,7 +273,6 @@ public:
 
 private:
 
-
     // Estimate of performance: Linear. O(n).
     // Short rationale for estimate: This is a recursive function that loops through every
     // subarea of an area (indirect and direct) and adds them to vector to which the shared_pointer
