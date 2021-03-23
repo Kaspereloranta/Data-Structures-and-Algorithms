@@ -359,14 +359,25 @@ std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
         return {NO_AREA};
     }
     std::vector<AreaID> subareas;
-    bool is_first_round = true; // to avoid of adding the area itself into vector in get_area_and_subareas_.
-    get_subareas_(id,subareas,is_first_round);
+    get_subareas_(id,subareas);
     return subareas;
+}
+
+void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added)
+{
+    if(areas_.find(id) != areas_.end()) // tämä ehkä turha? koska alueen olemassaolo tarkastetaan jo all_subareas_in_area:ssa
+    {                                   // toisaalta ehkä fiksua tehdä tsekkaus myös alialueille, koska .find() on kuitenki vakio.
+        for(auto subarea : areas_.at(id).childrenAreas)
+        {
+            subareas_already_added.push_back(subarea);
+            get_subareas_(subarea,subareas_already_added);
+        }
+    }
 }
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
-    // TÄTÄ VOI MIETTIÄ VIELÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA
+    // TÄTÄ VOI MIETTIÄ VIELÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA, ETENKIN TUPLAFORLOOPPIA.
 
     if(areas_.find(id1)==areas_.end() or
        areas_.find(id2)==areas_.end()) // .find() and .end() for unordered_map is constant on average, worst-case O(n).
@@ -409,23 +420,6 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
         }
     }
     return nearest_common_area;
-}
-
-void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added, bool & is_first_round)
-{
-    if(areas_.find(id) != areas_.end()) // tämä ehkä turha? koska alueen olemassaolo tarkastetaan jo all_subareas_in_area:ssa
-    {                                   // toisaalta ehkä fiksua tehdä tsekkaus myös alialueille, koska .find() on kuitenki vakio.
-        if(!is_first_round)
-        {
-            subareas_already_added.push_back(id);
-            is_first_round = false;
-        }
-        for(auto subarea : areas_.at(id).childrenAreas)
-        {
-            subareas_already_added.push_back(subarea);
-            get_subareas_(subarea,subareas_already_added,is_first_round);
-        }
-    }
 }
 
 void Datastructures::get_upper_areas(AreaID id, std::vector<AreaID> & upper_areas)

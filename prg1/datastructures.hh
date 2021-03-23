@@ -283,7 +283,7 @@ private:
     // subarea of an area (indirect and direct) and adds them to vector which is given as a
     // reference as a parameter. Usage of for-loop inside of this operation causes this to be linear on
     // complexity.
-    void get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added,bool & is_first_round);
+    void get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added);
 
     // Estimate of performance: Linear. O(n).
     // Short rationale for estimate: This is a recursive function that loops through every
