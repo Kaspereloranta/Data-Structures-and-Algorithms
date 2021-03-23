@@ -316,6 +316,9 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
     // on most cases it is more efficient than linear, since the areas make up
     // a tree-struct. The while loop below would be linear only if every area
     // had only one child maximum. (Tree would not have any branches)
+
+    // TÄHÄN VOISI EHKÄ KÄYTTÄÄ PUUN ALKIOIDEN LÄPIKÄYMISTÄ JÄLKIJÄRJESTYKSESSÄ?
+    // katso mallia common_area_of_subareas.
     while(keep_looping)
     {
         if(area_and_upper_areas.top().second.parentAreaID != NO_AREA)
@@ -363,17 +366,55 @@ std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
-    // TÄHÄN VOISI KATSOA MALLIA subarea_in_areas -toteutuksesta, kun
-    // täytyy kiivetä puussa ylöspäin.
+    // TÄTÄ VOI MIETTIÄ VIELÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA
 
-    // Replace this comment with your implementation
-    return NO_AREA;
+    if(areas_.find(id1)==areas_.end() or
+       areas_.find(id2)==areas_.end()) // .find() and .end() for unordered_map is constant on average, worst-case O(n).
+    {
+        return NO_AREA;
+    }
+
+    std::vector<AreaID> upper_areas_1;
+    std::vector<AreaID> upper_areas_2;
+
+    // Let's fullfill vector above with upper areas of
+    // areas representing IDs id1 and id2. Fullfillment
+    // is done by using recursive function get_upper_areas.
+    // by using vector we ensure that areas are in right
+    // order. ("father" -- "grandfather" -- etc.)
+
+    get_upper_areas(id1,upper_areas_1); // O(n)
+    get_upper_areas(id2,upper_areas_2); // O(n)
+
+    AreaID nearest_common_area = NO_AREA;
+
+    // The first common area we found in this double-for-loop above is the
+    // nearest common area (Because the areas are in right order in vectors).
+    // Once the first common ancestor is found, we can break the loops.
+
+    //for-loop complexity: O(n^2).
+    for(AreaID area1 : upper_areas_1)
+    {
+        for(AreaID area2 : upper_areas_2)
+        {
+            if(area1 == area2)
+            {
+                nearest_common_area = area1;
+                break;
+            }
+        }
+        if(nearest_common_area != NO_AREA)
+        {
+            break;
+        }
+    }
+    return nearest_common_area;
 }
 
 void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added, bool & is_first_round)
 {
-    if(areas_.find(id) != areas_.end())
-    {
+    if(areas_.find(id) != areas_.end()) // tämä ehkä turha? koska alueen olemassaolo tarkastetaan jo all_subareas_in_area:ssa
+    {                                   // toisaalta ehkä fiksua tehdä tsekkaus myös alialueille, koska .find() on kuitenki vakio.
         if(!is_first_round)
         {
             subareas_already_added.push_back(id);
@@ -387,3 +428,14 @@ void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_alre
     }
 }
 
+void Datastructures::get_upper_areas(AreaID id, std::vector<AreaID> & upper_areas)
+{
+    if(areas_.find(id) != areas_.end())
+    {
+        if(areas_.at(id).parentAreaID != NO_AREA)
+        {
+            upper_areas.push_back(areas_.at(id).parentAreaID);
+            get_upper_areas(areas_.at(id).parentAreaID,upper_areas);
+        }
+    }
+}

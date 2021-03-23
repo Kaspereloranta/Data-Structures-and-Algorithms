@@ -12,6 +12,7 @@
 #include <stack>
 #include <unordered_set>
 #include <unordered_map>
+#include <set>
 #include <map>
 #include <QDebug>
 #include <memory>
@@ -267,18 +268,30 @@ public:
     // here, which makes this operation to be constant on time.
     bool remove_place(PlaceID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n^2).
+    // Short rationale for estimate: Double-for-loop inside this operation
+    // causes it to be O(n^2). This is for the worst case only, in which the nearest common ancestor
+    // is the root of the tree and the tree has only two branches. This function calls recursive function
+    // get_upper_areas, which is defined in private interface of class datastructures.
+    // get_upper_areas's complexity is  O(n).
     AreaID common_area_of_subareas(AreaID id1, AreaID id2);
 
 private:
 
     // Estimate of performance: Linear. O(n).
     // Short rationale for estimate: This is a recursive function that loops through every
-    // subarea of an area (indirect and direct) and adds them to vector to which the shared_pointer
-    // parameter is assigned. Usage of for-loop inside of this operation cause this to be linear on
+    // subarea of an area (indirect and direct) and adds them to vector which is given as a
+    // reference as a parameter. Usage of for-loop inside of this operation causes this to be linear on
     // complexity.
     void get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added,bool & is_first_round);
+
+    // Estimate of performance: Linear. O(n).
+    // Short rationale for estimate: This is a recursive function that loops through every
+    // "parents" of an area and adds them to set to which is given as a reference as a parameter.
+    // Usage of for-loop inside of this operation causes this to be linear on complexity.
+    void get_upper_areas(AreaID id1, std::vector<AreaID> & upper_areas);
+
+    // TÄHÄN
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
