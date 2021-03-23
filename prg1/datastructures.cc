@@ -100,7 +100,7 @@ Coord Datastructures::get_place_coord(PlaceID id)
 
 bool Datastructures::add_area(AreaID id, const Name &name, std::vector<Coord> coords)
 {
-    Area new_area = {name,coords,false,NO_AREA,{}}; // NO_AREA and empty set {} indicates that no parent area are added yet and
+    Area new_area = {name,coords,false,NO_AREA,{}}; // NO_AREA and empty vector {} indicates that no parent area are added yet and
                                                     // that no subareas are added yet. bool-value tells is the are child of some area
                                                     // which is false at initialization.
 
@@ -277,7 +277,7 @@ bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
     {
         if(!areas_.at(id).isSubArea)
         {
-            areas_.at(parentid).childrenAreas.insert(id); // insertion to unordered_set is constant averagely, worst-case O(n).
+            areas_.at(parentid).childrenAreas.push_back(id); // .push_back() to vector is constant.
             areas_.at(id).isSubArea = true;               // .at() for unordered_map is similar in complexity.
             areas_.at(id).parentAreaID = parentid;
             return true;
@@ -336,6 +336,8 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 
 std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 {
+    // TÄHÄN VOISI KATSOA MALLIA places_coord_orderista.
+
     // Replace this comment with your implementation
     return {};
 }
@@ -352,11 +354,36 @@ std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
     if(areas_.find(id)==areas_.end()) // .find() and .end() for unordered_map is constant on average, worst-case O(n).
     {
         return {NO_AREA};
-    }    return {NO_AREA};
+    }
+    std::vector<AreaID> subareas;
+    bool is_first_round = true; // to avoid of adding the area itself into vector in get_area_and_subareas_.
+    get_subareas_(id,subareas,is_first_round);
+    return subareas;
 }
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
+    // TÄHÄN VOISI KATSOA MALLIA subarea_in_areas -toteutuksesta, kun
+    // täytyy kiivetä puussa ylöspäin.
+
     // Replace this comment with your implementation
     return NO_AREA;
 }
+
+void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added, bool & is_first_round)
+{
+    if(areas_.find(id) != areas_.end())
+    {
+        if(!is_first_round)
+        {
+            subareas_already_added.push_back(id);
+            is_first_round = false;
+        }
+        for(auto subarea : areas_.at(id).childrenAreas)
+        {
+            subareas_already_added.push_back(id);
+            get_subareas_(subarea,subareas_already_added,is_first_round);
+        }
+    }
+}
+

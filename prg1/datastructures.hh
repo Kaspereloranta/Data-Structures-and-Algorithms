@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <map>
 #include <QDebug>
+#include <memory>
 
 // Types for IDs
 using PlaceID = long int;
@@ -92,7 +93,14 @@ struct Area
     std::vector<Coord> shape;
     bool isSubArea;
     AreaID parentAreaID;
-    std::unordered_set<PlaceID> childrenAreas;
+    // muutetaan childrenAreas olemaan sittenkin
+    // vector, jotta all_subareas_in_arean toteutus
+    // helpottu. HUOM. kannattaa (ehkä?) muuttaa
+    // takaisin setikisi harjoitustyön 2. vaiheessa,
+    // jos siellä täytyy toteuttaa alueita poistava operaatio.
+    // (unordered_setistä tietyn alkion poisto ~ theta(1), kun
+    // taas vectorille O(n)
+    std::vector<AreaID> childrenAreas;
 };
 
 // This is the class you are supposed to implement
@@ -238,8 +246,14 @@ public:
     // Short rationale for estimate:
     void creation_finished();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Linear O(n).
+    // Short rationale for estimate: All operations
+    // used directly inside of this function are constants on average
+    // but this function calls recursive function get_subareas_ which is
+    // implemented in private interface of class datastructures. There,
+    // if the given area is the "root" area, all areas will be added to
+    // vector that this function will return. Therefore, the performance
+    // is O(n) since the "worst-case" is linear operation.
     std::vector<AreaID> all_subareas_in_area(AreaID id);
 
     // Estimate of performance:
@@ -258,10 +272,18 @@ public:
     AreaID common_area_of_subareas(AreaID id1, AreaID id2);
 
 private:
-    // Add stuff needed for your class implementation here
+
+
+    // Estimate of performance: Linear. O(n).
+    // Short rationale for estimate: This is a recursive function that loops through every
+    // subarea of an area (indirect and direct) and adds them to vector to which the shared_pointer
+    // parameter is assigned. Usage of for-loop inside of this operation cause this to be linear on
+    // complexity.
+    void get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added,bool & is_first_round);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
+
 };
 
 #endif // DATASTRUCTURES_HH
