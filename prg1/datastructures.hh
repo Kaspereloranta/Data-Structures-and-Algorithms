@@ -235,10 +235,13 @@ public:
     bool add_subarea_to_area(AreaID id, AreaID parentid);
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: While-loop used here
-    // causes to be O(n) on complexity. Other operations used
-    // in this function are all constant on time averagely. (but
-    // some of their worst cases are linear as well.)
+    // Short rationale for estimate: This function
+    // calls recursive function get_upper_areas_, which
+    // is defined in the private interface of class datastructures.
+    // get_upper_areas_ adds all direct or indirect "parents"
+    // of an area given as parameter to a vector. In the worst case
+    // Area-tree has only one branch, hence the operation is linear,
+    // causing the asymptotic efficiency to be O(n).
     std::vector<AreaID> subarea_in_areas(AreaID id);
 
     // Non-compulsory operations
@@ -280,16 +283,17 @@ private:
 
     // Estimate of performance: Linear. O(n).
     // Short rationale for estimate: This is a recursive function that loops through every
-    // subarea of an area (indirect and direct) and adds them to vector which is given as a
+    // subarea of an area (direct and indirect) in preorder and adds them to vector which is given as a
     // reference as a parameter. Usage of for-loop inside of this operation causes this to be linear on
     // complexity.
     void get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added);
 
     // Estimate of performance: Linear. O(n).
     // Short rationale for estimate: This is a recursive function that loops through every
-    // "parents" of an area and adds them to set to which is given as a reference as a parameter.
-    // Usage of for-loop inside of this operation causes this to be linear on complexity.
-    void get_upper_areas(AreaID id1, std::vector<AreaID> & upper_areas);
+    // "parents" of an area (direct and indirect) in postorder and adds them to vector to which is given as a
+    // reference as a parameter. Usage of for-loop inside of this operation causes this
+    // to be linear on complexity.
+    void get_upper_areas_(AreaID id1, std::vector<AreaID> & upper_areas);
 
     // TÄHÄN
 

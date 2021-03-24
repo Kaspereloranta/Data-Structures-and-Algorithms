@@ -293,47 +293,8 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
     {
         return {NO_AREA};
     }
-
     std::vector<AreaID> upper_areas;
-    std::stack<std::pair<AreaID,Area>> area_and_upper_areas;
-    area_and_upper_areas.push(std::make_pair(id,areas_.at(id))); // .push() for stack is constant on time, .at() is constant on average,
-    bool keep_looping = true;                                    // worst-case for .at() is O(n).
-
-    // let's use stack here for assistance to get easy and efficient acces to the latest
-    // area added to vector, which was ancestor of an original area whose id was given
-    // as a parameter.
-
-    // by doing so, we do not have to add the original area itself to vector at all
-    // which will be returned from this operation. If we did that, we would have
-    // to delete the first element from the vector in the end. Deleting the first element
-    // from vector is a linear operation, so this operation is more efficient if we can
-    // avoid doing so.
-
-    // and using stack also simplifies the while loop below, since we can
-    // use only one if-else structure by using stack
-
-    // complexity of while-loop: O(n).
-    // on most cases it is more efficient than linear, since the areas make up
-    // a tree-struct. The while loop below would be linear only if every area
-    // had only one child maximum. (Tree would not have any branches)
-
-    // TÄHÄN VOISI EHKÄ KÄYTTÄÄ PUUN ALKIOIDEN LÄPIKÄYMISTÄ JÄLKIJÄRJESTYKSESSÄ?
-    // katso mallia common_area_of_subareas.
-    while(keep_looping)
-    {
-        if(area_and_upper_areas.top().second.parentAreaID != NO_AREA)
-        {
-            upper_areas.push_back(area_and_upper_areas.top().second.parentAreaID); // parent found, let's store it to vector
-            area_and_upper_areas.push(std::make_pair(area_and_upper_areas.top().second.parentAreaID,  // let's store the parent to stack as well,
-                                                     areas_.at(area_and_upper_areas.top().second.parentAreaID))); // in order to get access to it easily
-                                                                                                                  // on next while-loop round.
-                                                     //.push_back() for vector is constant on time averagely, worst-case: O(n).
-        }                                            // .push() and .top() for stack are constants on time,
-        else                                         // make_pair() is constant as well.
-        {
-            keep_looping = false;
-        }
-    }
+    get_upper_areas_(id,upper_areas); // O(n)
     return upper_areas;
 }
 
@@ -365,8 +326,8 @@ std::vector<AreaID> Datastructures::all_subareas_in_area(AreaID id)
 
 void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added)
 {
-    if(areas_.find(id) != areas_.end()) // tämä ehkä turha? koska alueen olemassaolo tarkastetaan jo all_subareas_in_area:ssa
-    {                                   // toisaalta ehkä fiksua tehdä tsekkaus myös alialueille, koska .find() on kuitenki vakio.
+    if(areas_.find(id) != areas_.end())
+    {
         for(auto subarea : areas_.at(id).childrenAreas)
         {
             subareas_already_added.push_back(subarea);
@@ -394,8 +355,8 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
     // by using vector we ensure that areas are in right
     // order. ("father" -- "grandfather" -- etc.)
 
-    get_upper_areas(id1,upper_areas_1); // O(n)
-    get_upper_areas(id2,upper_areas_2); // O(n)
+    get_upper_areas_(id1,upper_areas_1); // O(n)
+    get_upper_areas_(id2,upper_areas_2); // O(n)
 
     AreaID nearest_common_area = NO_AREA;
 
@@ -422,14 +383,14 @@ AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
     return nearest_common_area;
 }
 
-void Datastructures::get_upper_areas(AreaID id, std::vector<AreaID> & upper_areas)
+void Datastructures::get_upper_areas_(AreaID id, std::vector<AreaID> & upper_areas)
 {
     if(areas_.find(id) != areas_.end())
     {
         if(areas_.at(id).parentAreaID != NO_AREA)
         {
             upper_areas.push_back(areas_.at(id).parentAreaID);
-            get_upper_areas(areas_.at(id).parentAreaID,upper_areas);
+            get_upper_areas_(areas_.at(id).parentAreaID,upper_areas);
         }
     }
 }
