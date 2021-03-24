@@ -47,12 +47,6 @@ void Datastructures::clear_all()
 
 std::vector<PlaceID> Datastructures::all_places()
 {
-    //TÄTÄ KANNATTAA YRITTÄÄ HIENOSÄÄTÄÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA
-    // TOISAALTA TÄMÄ EI OLE MUKANA TEHOKKUUSTESTEISSÄ.
-
-    // voi ehkä miettiä std::transform() tähän, mutta se taitaa tuottaa myös
-    // lineaarisen operaation
-
     std::vector<PlaceID> placeIDs;
     for(auto place : places_)
     {
@@ -139,8 +133,6 @@ void Datastructures::creation_finished()
 
 std::vector<PlaceID> Datastructures::places_alphabetically()
 {
-    // TÄMÄN TEHOKKUUTTA EHKÄ SYYTÄ HIOA VIELÄ
-
     std::map<Name,PlaceID> placesInAlphabeticalOrder;
 
    // for-loop complexity: O(n)
@@ -163,7 +155,9 @@ std::vector<PlaceID> Datastructures::places_alphabetically()
 
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
-    // PALAA TÄHÄN VIELÄ, VOI OLLA TEHOKKAAMPIAKIN TAPOJA TOTEUTTAA TÄMÄ
+    // MAINITSE DOKUMENTAATIOSSA, ETTÄ ET NÄHNYT JÄRKEVÄKSI PITÄÄ ALKIOITA
+    // AINA TALLESSA KOORDINAATTIJÄRJESTYKSESSÄ, KOSKA TÄMÄ OLISI HIDASTANUT MUITA OPERAATIOITA
+    // SEKÄ TEHNYT KOKONAISUUDEN HALLINNASTA HANKALAMPAA, KOSKA OLISI S
 
     // Let's use multimap to sort places based on their location.
     // lets use strucutre map<double,map<int,PlaceID>>
@@ -173,23 +167,23 @@ std::vector<PlaceID> Datastructures::places_coord_order()
 
     std::map<double,std::multimap<int,PlaceID>> places_in_order;
 
-    // for-loop complexity: O(n)
+    // for-loop complexity: O(n * log (n))
     for (auto place : places_)
     {
         double distance = sqrt(pow(place.second.location.x,2)+pow(place.second.location.y,2));
 
         if (places_in_order.find(distance) != places_in_order.end())        // map.find() complexity O(log n)
         {
-            places_in_order.at(distance).insert(std::make_pair(place.second.location.y,place.first));
+            places_in_order.at(distance).insert(std::make_pair(place.second.location.y,place.first)); // .insert() for map is O(log n) as well.
         }
-        else                                                                      // map.insert() complexity: O(log n)
+        else
         {
-            places_in_order[distance] = {std::make_pair(place.second.location.y,place.first)};
+            places_in_order[distance] = {std::make_pair(place.second.location.y,place.first)}; // O (log n)
         }
     }
 
     std::vector<PlaceID> place_IDs_in_order;
-
+    // For-loop above: O(n).
     for (auto place : places_in_order)
     {
         if (place.second.size()==1)
@@ -198,17 +192,16 @@ std::vector<PlaceID> Datastructures::places_coord_order()
         }
         else
         {
-            for(auto place_with_same_distance : place.second)
-            {
-                place_IDs_in_order.push_back(place_with_same_distance.second);  // Averagely should not need many for-loops here
-            }                                                                   // so even this for-loop inside a for-loop
-        }                                                                       // harms the asymptotic efficiency, it harms
-                                                                                // the worst case only, averagely I'd say that
-    }                                                                           // the efficiency of this whole operation is O(n log n)
-                                                                                // while the worst-case is O(n^2)
-    // PALAA TÄHÄN VIELÄ, VOI OLLA TEHOKKAAMPIAKIN TAPOJA TOTEUTTAA TÄMÄ
-    return place_IDs_in_order;
-}
+            for(auto place_with_same_distance : place.second)                   // Allthough there is a for-loop inside of for-loop
+            {                                                                   // the complexity of this structure is not O(n^2).
+                place_IDs_in_order.push_back(place_with_same_distance.second);  // Due to the datastructure map<double,multimap<int,PlaceID>> we are using,
+            }                                                                   // if we enter to that internal for-loop, it means that there are less
+        }                                                                       // places to loop through in the outermost for-loop. (Because if we enter to
+     }                                                                          // to the second for-loop, there are at least two places with the exact same
+    return place_IDs_in_order;                                                  // distance from origo. This for-for-structure loops through every place there is,                                                                                 // so therefore the efficiency of this structure is theta(n), since .push_back() is constant                                                                                // in time for vector.
+}                                                                               // causing it to be linear in complexity. (The exact efficiency would be something
+                                                                                // like O(n + m) in which the m is amount of distances that multiple places have.
+                                                                                // (Due to the if-else). But we can approximate and say that asymptotic efficiency is O(n).
 
 std::vector<PlaceID> Datastructures::find_places_name(Name const& name)
 {
@@ -283,7 +276,6 @@ bool Datastructures::add_subarea_to_area(AreaID id, AreaID parentid)
             return true;
         }
     }
-
     return false;
 }
 

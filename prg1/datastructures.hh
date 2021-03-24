@@ -148,25 +148,26 @@ public:
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance: O(n * log(n) + n) ~ O(n*log(n))
+    // Estimate of performance: O(n*log(n))
     // Short rationale for estimate: In the first for-loop
     // we insert elements to map, which's complexity is O(log n). And
     // we are doing that n times due to for-loop. On the second
     // for-loop we add sorted placeIDs to vector using push_back(), which's
-    // complexity is constant ( O(1)). But the second for-loop brings the
-    // coefficient of 2 to the performance.
+    // complexity is constant O(1). Since the first for-loop (in which
+    // we insereted elements to map) is the most inefficient operation done here
+    // the asymptotic efficiency for this function is O(n*log(n)).
     std::vector<PlaceID> places_alphabetically();
 
-    // Estimate of performance: Average: 2*n*log(n)+n ~~ n*log(n)
-    // Worst case: O(n^2)
+    // Estimate of performance: O(n * log n)
     // Short rationale for estimate: Usage of insert() and find() for map
-    // inside the for loop causes the factor 2*n*log(n) and the
-    // later for-loop causes the factor n on average case, which
-    // can be approximated to be O(n*log(n)). However, O(n^2) is
-    // the worst case scenario, although it should be rare.
-    // For-loop inside a for-loop causes O(n^2), which is used
-    // to  add places with same distance but different y-coordinate
-    // to vector.
+    // inside the for loop is the most inefficient operation done here,
+    // and the complexity for both of those operations are logarithmic.
+    // The usage of those inside the for loop brings the coefficient n.
+    // This function includes also another for-loop which includes
+    // another for-loop. However, this double-for-loop structure's
+    // complexity is not actually O(n^2) though you might think so.
+    // The explanaiton for this is written in function's definition
+    // in datastructures.cc.
     std::vector<PlaceID> places_coord_order();
 
     // Estimate of performance: Theta(n)
