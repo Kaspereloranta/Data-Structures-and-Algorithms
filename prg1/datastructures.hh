@@ -84,7 +84,7 @@ Distance const NO_DISTANCE = NO_VALUE;
 struct Place
 {
     Name placeName;
-    PlaceType place;
+    PlaceType type;
     Coord location;
 };
 
@@ -94,13 +94,6 @@ struct Area
     std::vector<Coord> shape;
     bool isSubArea;
     AreaID parentAreaID;
-    // muutetaan childrenAreas olemaan sittenkin
-    // vector, jotta all_subareas_in_arean toteutus
-    // helpottu. HUOM. kannattaa (ehkä?) muuttaa
-    // takaisin setikisi harjoitustyön 2. vaiheessa,
-    // jos siellä täytyy toteuttaa alueita poistava operaatio.
-    // (unordered_setistä tietyn alkion poisto ~ theta(1), kun
-    // taas vectorille O(n)
     std::vector<AreaID> childrenAreas;
 };
 
@@ -117,10 +110,10 @@ public:
     // which is being used here.
     int place_count();
 
-    // Estimate of performance: Linear. 2*Theta(n)
+    // Estimate of performance: Linear. Theta(n)
     // Short rationale for estimate:  unordered_map's member function clear()'s complexity
     // is linear in the size of the container. Now clear() is being called for places_ and areas_
-    // which brings the coefficient 2.
+    // but we can say that this operation's asymptotic efficiency is theta(n).
     void clear_all();
 
     // Estimate of performance: Linear. O(n).
@@ -134,23 +127,21 @@ public:
     // which is constant on average, but in worst-case O(n). Other opeartions used here are constant.
     bool add_place(PlaceID id, Name const& name, PlaceType type, Coord xy);
 
-    // Estimate of performance: Average: Constant, Theta(1). Worst-case 3*O(n).
+    // Estimate of performance: Average: Constant, Theta(1). Worst-case O(n).
     // Short rationale for estimate: find() is being used here for unordered_map
     // which's complexity is constant on average but may be O(n) in the worst case.
-    // at() is also used for unordered_map for two times, which's complexity is similar than find()'s.
+    // at() is also used for unordered_map, which's complexity is similar than find()'s.
     std::pair<Name, PlaceType> get_place_name_type(PlaceID id);
 
-    // Estimate of performance: Average: Constant, Theta(1). Worst-Case 2*O(n)
+    // Estimate of performance: Average: Constant, Theta(1). Worst-Case O(n)
     // Short rationale for estimate: find() is being used here for unordered_map
     // which's complexity is constant on average but may be O(n) in the worst case.
     // at() is also used for unordered_map, which's complexity is similar than find()'s.
     Coord get_place_coord(PlaceID id);
 
-    // We recommend you implement the operations below only after implementing the ones above
-
     // Estimate of performance: O(n*log(n))
     // Short rationale for estimate: In the first for-loop
-    // we insert elements to map, which's complexity is O(log n). And
+    // we insert elements to map by using .insert(), which's complexity is O(log n). And
     // we are doing that n times due to for-loop. On the second
     // for-loop we add sorted placeIDs to vector using push_back(), which's
     // complexity is constant O(1). Since the first for-loop (in which
@@ -159,33 +150,30 @@ public:
     std::vector<PlaceID> places_alphabetically();
 
     // Estimate of performance: O(n * log n)
-    // Short rationale for estimate: Usage of insert() and find() for map
-    // inside the for loop is the most inefficient operation done here,
-    // and the complexity for both of those operations are logarithmic.
-    // The usage of those inside the for loop brings the coefficient n.
-    // This function includes also another for-loop which includes
-    // another for-loop. However, this double-for-loop structure's
+    // Short rationale for estimate: This function calls function
+    // get_closest_places_in_order, which is defined in the private
+    // interface of class datastructures, and its complexity is O(n*log n).
+    // This function includes also another for-loop which
+    // includes another for-loop. However, this double-for-loop structure's
     // complexity is not actually O(n^2) though you might think so.
-    // The explanaiton for this is written in function's definition
+    // The detailed explanaiton for this is written in function's definition
     // in datastructures.cc.
     std::vector<PlaceID> places_coord_order();
 
-    // Estimate of performance: Theta(n)
+    // Estimate of performance: O(n)
     // Short rationale for estimate: For-loop causes it to
     // be a linear operation, push_back() doesn't affect to
-    // efficiency, since it is a constant operation. It is
-    // exactly theta(n) (nor big-O or Omega), because
-    // for-loop has to go through all the places to check
-    // their names.
+    // efficiency, since it is a constant operation. On most
+    // cases it is theta(n), but in the scenario where places_
+    // is empty, it is constant.
     std::vector<PlaceID> find_places_name(Name const& name);
 
-    // Estimate of performance: Theta(n)
+    // Estimate of performance: O(n)
     // Short rationale for estimate: For-loop causes it to
     // be a linear operation, push_back() doesn't affect to
-    // efficiency, since it is a constant operation. It is
-    // exactly theta(n) (nor big-O or Omega), because
-    // for-loop has to go through all the places in places_ to check
-    // their types.
+    // efficiency, since it is a constant operation. On most
+    // cases it is theta(n), but in the scenario where places_
+    // is empty, it is constant.
     std::vector<PlaceID> find_places_type(PlaceType type);
 
     // Estimate of performance: Average: Constant, Theta(1). Worst-case:  O(n)
@@ -199,8 +187,6 @@ public:
     // .at() for unordered_map, which are both constant on average, but on
     // worst-case they are linear.
     bool change_place_coord(PlaceID id, Coord newcoord);
-
-    // We recommend you implement the operations below only after implementing the ones above
 
     // Estimate of performance: Average: constant, theta(1). Worst-case: O(n).
     // Short rationale for estimate: insert() is being used here for
@@ -220,10 +206,11 @@ public:
     // here.
     std::vector<Coord> get_area_coords(AreaID id);
 
-    // Estimate of performance: Linear. Theta(n)
+    // Estimate of performance: Linear. O(n)
     // Short rationale for estimate: For-loop
-    // causes it to be Theta(n), since it loops alwayas
+    // causes it to be linear, since it loops always
     // as many times there are elements in areas_.
+    // If areas_ is empty, it is constant.
     // push_back() for vector is constant which
     // is also being used here.
     std::vector<AreaID> all_areas();
@@ -240,12 +227,10 @@ public:
     // calls recursive function get_upper_areas_, which
     // is defined in the private interface of class datastructures.
     // get_upper_areas_ adds all direct or indirect "parents"
-    // of an area given as parameter to a vector. In the worst case
-    // Area-tree has only one branch, hence the operation is linear,
+    // of an area given as parameter to a vector given as a parameter as well.
+    // In the worst case Area-tree has only one branch, hence the operation is linear,
     // causing the asymptotic efficiency to be O(n).
     std::vector<AreaID> subarea_in_areas(AreaID id);
-
-    // Non-compulsory operations
 
     // Estimate of performance:
     // Short rationale for estimate:
@@ -261,8 +246,13 @@ public:
     // is O(n) since the "worst-case" is linear operation.
     std::vector<AreaID> all_subareas_in_area(AreaID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n*log(n)).
+    // Short rationale for estimate: This operation calls function
+    // get_closest_places_in_order, which is defined in the private interface
+    // of class datastructures. get_closest_places_in_order's complexity is
+    // O(n*log(n)), and since the for-loop used inside this function is
+    // actually constant in time (read from datastructures.cc why so),
+    // the asymptotic efficiency for this function is O(n*log(n)) as well.
     std::vector<PlaceID> places_closest_to(Coord xy, PlaceType type);
 
     // Estimate of performance: Constant. Theta(1).
@@ -277,7 +267,7 @@ public:
     // causes it to be O(n^2). This is for the worst case only, in which the nearest common ancestor
     // is the root of the tree and the tree has only two branches. This function calls recursive function
     // get_upper_areas, which is defined in private interface of class datastructures.
-    // get_upper_areas's complexity is  O(n).
+    // get_upper_areas's complexity is O(n).
     AreaID common_area_of_subareas(AreaID id1, AreaID id2);
 
 private:
@@ -296,7 +286,13 @@ private:
     // to be linear on complexity.
     void get_upper_areas_(AreaID id1, std::vector<AreaID> & upper_areas);
 
-    // TÄHÄN
+    // Estimate of performance: O(n * log n)
+    // Short rationale for estimate: This function sorts places based on their distance from location given
+    // as a parameter xy by inserting them into map in for-loop. (And only certain types of places, if paramerer type is
+    // something else than NO_PLACE.) Usage of insert() and find() for map
+    // inside the for loop is the most inefficient operation done here, and the complexity for both of
+    // those operations are logarithmic. The usage of those inside the for loop brings the coefficient n.
+    void get_closest_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int,PlaceID>> & places_in_order);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;

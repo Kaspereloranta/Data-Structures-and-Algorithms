@@ -77,7 +77,7 @@ std::pair<Name, PlaceType> Datastructures::get_place_name_type(PlaceID id)
         return {NO_NAME, PlaceType::NO_TYPE};
     }
 
-    return std::make_pair(places_.at(id).placeName,places_.at(id).place); // .at() complexity: average constant, worst-case: O(n).
+    return std::make_pair(places_.at(id).placeName,places_.at(id).type); // .at() complexity: average constant, worst-case: O(n).
 }
 
 Coord Datastructures::get_place_coord(PlaceID id)
@@ -166,21 +166,7 @@ std::vector<PlaceID> Datastructures::places_coord_order()
     // int is y-coordinate.
 
     std::map<double,std::multimap<int,PlaceID>> places_in_order;
-
-    // for-loop complexity: O(n * log (n))
-    for (auto place : places_)
-    {
-        double distance = sqrt(pow(place.second.location.x,2)+pow(place.second.location.y,2));
-
-        if (places_in_order.find(distance) != places_in_order.end())        // map.find() complexity O(log n)
-        {
-            places_in_order.at(distance).insert(std::make_pair(place.second.location.y,place.first)); // .insert() for map is O(log n) as well.
-        }
-        else
-        {
-            places_in_order[distance] = {std::make_pair(place.second.location.y,place.first)}; // O (log n)
-        }
-    }
+    get_closest_places_in_order({0,0},PlaceType::NO_TYPE,places_in_order);
 
     std::vector<PlaceID> place_IDs_in_order;
     // For-loop above: O(n).
@@ -198,8 +184,9 @@ std::vector<PlaceID> Datastructures::places_coord_order()
             }                                                                   // if we enter to that internal for-loop, it means that there are less
         }                                                                       // places to loop through in the outermost for-loop. (Because if we enter to
      }                                                                          // to the second for-loop, there are at least two places with the exact same
-    return place_IDs_in_order;                                                  // distance from origo. This for-for-structure loops through every place there is,                                                                                 // so therefore the efficiency of this structure is theta(n), since .push_back() is constant                                                                                // in time for vector.
-}                                                                               // causing it to be linear in complexity. (The exact efficiency would be something
+    return place_IDs_in_order;                                                  // distance from origo, but we don't enter to that second for loop every time)                                                                                // so therefore the efficiency of this structure is theta(n), since .push_back() is constant                                                                                // in time for vector.
+}                                                                               // This for-for-structure loops through every place there is,
+                                                                                // causing it to be linear in complexity. (The exact efficiency would be something
                                                                                 // like O(n + m) in which the m is amount of distances that multiple places have.
                                                                                 // (Due to the if-else). But we can approximate and say that asymptotic efficiency is O(n).
 
@@ -225,7 +212,7 @@ std::vector<PlaceID> Datastructures::find_places_type(PlaceType type)
     // for-loop makes this operation linear.
     for(auto place : places_)
     {
-        if(place.second.place == type)
+        if(place.second.type == type)
         {
             places_with_right_type.push_back(place.first); //push_back() complexity: constant.
         }
@@ -292,10 +279,44 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 
 std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 {
-    // TÄHÄN VOISI KATSOA MALLIA places_coord_orderista.
+    std::map<double,std::multimap<int,PlaceID>> closest_places;
+    get_closest_places_in_order(xy,type,closest_places); // O(n*log(n))
+    std::vector<PlaceID> three_closest_places;
 
-    // Replace this comment with your implementation
-    return {};
+    // Allthough there is for-loop inside a for-loop, the
+    // complexity of this structure is not O(n^2).
+    // (Read detailed explanation why it is not from
+    // places_coord_order where this kind of structure
+    // were used as well.)
+    // That is because we stop looping by using break
+    // after three places are added to vector.
+    // On this function's case, the above for-structure
+    // is actually consant, since the looping will
+    // be stopped after 3 places are added to vector.
+    for (auto place : closest_places)
+    {
+        if(place.second.size()==1)
+        {
+            three_closest_places.push_back(place.second.begin()->second);
+            if(three_closest_places.size()==3)
+            {
+                break;
+            }
+        }
+        else
+        {
+            for(auto place_with_nonunique_distance : place.second)
+            {
+                three_closest_places.push_back(place_with_nonunique_distance.second);
+                if(three_closest_places.size()==3)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    return three_closest_places;
 }
 
 bool Datastructures::remove_place(PlaceID id)
@@ -385,4 +406,39 @@ void Datastructures::get_upper_areas_(AreaID id, std::vector<AreaID> & upper_are
             get_upper_areas_(areas_.at(id).parentAreaID,upper_areas);
         }
     }
+}
+
+void Datastructures::get_closest_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int, PlaceID>> & places_in_order)
+{
+    if(type == PlaceType::NO_TYPE)
+    {
+        for (auto place : places_)
+        {
+            double distance = sqrt(pow(place.second.location.x-xy.x,2)+pow(place.second.location.y-xy.y,2));
+
+            if (places_in_order.find(distance) != places_in_order.end())        // map.find() complexity O(log n)
+            {
+                places_in_order.at(distance).insert(std::make_pair(place.second.location.y,place.first)); // .insert() for map is O(log n) as well.
+            }
+            else
+            {
+                places_in_order[distance] = {std::make_pair(place.second.location.y,place.first)}; // O (log n)
+            }
+        }
+        return;
+    }
+    for (auto place : places_)
+    {
+        double distance = sqrt(pow(place.second.location.x-xy.x,2)+pow(place.second.location.y-xy.y,2));
+
+        if (places_in_order.find(distance) != places_in_order.end() and place.second.type == type)        // map.find() complexity O(log n)
+        {
+            places_in_order.at(distance).insert(std::make_pair(place.second.location.y,place.first)); // .insert() for map is O(log n) as well.
+        }
+        else if(place.second.type == type)
+        {
+            places_in_order[distance] = {std::make_pair(place.second.location.y,place.first)}; // O (log n)
+        }
+    }
+    return;
 }
