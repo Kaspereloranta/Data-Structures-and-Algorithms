@@ -279,11 +279,13 @@ private:
     // complexity.
     void get_subareas_(AreaID id,std::vector<AreaID> & subareas_already_added);
 
-    // Estimate of performance: Linear. O(n).
+    // Estimate of performance: Constant. Theta(1). Worst-case: O(n). (In its actual recursive use, it is O(n),
+    // but one run of this function is constant on average).
     // Short rationale for estimate: This is a recursive function that loops through every
     // "parents" of an area (direct and indirect) in postorder and adds them to vector to which is given as a
-    // reference as a parameter. Usage of for-loop inside of this operation causes this
-    // to be linear on complexity.
+    // reference as a parameter. However, one run of this function is actually constant in time since
+    // this function is using only operations .find(), .end() and .at() for unordered_map and .push_back() for
+    // vector, which are all constants on average, but some of them may be linear in the worst case.
     void get_upper_areas_(AreaID id1, std::vector<AreaID> & upper_areas);
 
     // Estimate of performance: O(n * log n)
