@@ -155,10 +155,6 @@ std::vector<PlaceID> Datastructures::places_alphabetically()
 
 std::vector<PlaceID> Datastructures::places_coord_order()
 {
-    // MAINITSE DOKUMENTAATIOSSA, ETTÄ ET NÄHNYT JÄRKEVÄKSI PITÄÄ ALKIOITA
-    // AINA TALLESSA KOORDINAATTIJÄRJESTYKSESSÄ, KOSKA TÄMÄ OLISI HIDASTANUT MUITA OPERAATIOITA
-    // SEKÄ TEHNYT KOKONAISUUDEN HALLINNASTA HANKALAMPAA, KOSKA OLISI S
-
     // Let's use multimap to sort places based on their location.
     // lets use strucutre map<double,map<int,PlaceID>>
     // because there might be places with same distance from origo
@@ -166,7 +162,7 @@ std::vector<PlaceID> Datastructures::places_coord_order()
     // int is y-coordinate.
 
     std::map<double,std::multimap<int,PlaceID>> places_in_order;
-    get_closest_places_in_order({0,0},PlaceType::NO_TYPE,places_in_order);
+    get_places_in_order({0,0},PlaceType::NO_TYPE,places_in_order);
 
     std::vector<PlaceID> place_IDs_in_order;
     // For-loop above: O(n).
@@ -280,7 +276,7 @@ std::vector<AreaID> Datastructures::subarea_in_areas(AreaID id)
 std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
 {
     std::map<double,std::multimap<int,PlaceID>> closest_places;
-    get_closest_places_in_order(xy,type,closest_places); // O(n*log(n))
+    get_places_in_order(xy,type,closest_places); // O(n*log(n))
     std::vector<PlaceID> three_closest_places;
 
     // Allthough there is for-loop inside a for-loop, the
@@ -292,7 +288,8 @@ std::vector<PlaceID> Datastructures::places_closest_to(Coord xy, PlaceType type)
     // after three places are added to vector.
     // On this function's case, the above for-structure
     // is actually consant, since the looping will
-    // be stopped after 3 places are added to vector.
+    // be stopped after 3 places are added to vector and
+    // the places are already in right order in closest_places.
     for (auto place : closest_places)
     {
         if(place.second.size()==1)
@@ -351,7 +348,6 @@ void Datastructures::get_subareas_(AreaID id,std::vector<AreaID> & subareas_alre
 
 AreaID Datastructures::common_area_of_subareas(AreaID id1, AreaID id2)
 {
-    // TÄTÄ VOI MIETTIÄ VIELÄ TEHOKKAAMMAKSI, JOS JÄÄ AIKAA, ETENKIN TUPLAFORLOOPPIA.
 
     if(areas_.find(id1)==areas_.end() or
        areas_.find(id2)==areas_.end()) // .find() and .end() for unordered_map is constant on average, worst-case O(n).
@@ -408,7 +404,7 @@ void Datastructures::get_upper_areas_(AreaID id, std::vector<AreaID> & upper_are
     }
 }
 
-void Datastructures::get_closest_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int, PlaceID>> & places_in_order)
+void Datastructures::get_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int, PlaceID>> & places_in_order)
 {
     if(type == PlaceType::NO_TYPE)
     {

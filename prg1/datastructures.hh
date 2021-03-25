@@ -294,7 +294,7 @@ private:
     // something else than NO_PLACE.) Usage of insert() and find() for map
     // inside the for loop is the most inefficient operation done here, and the complexity for both of
     // those operations are logarithmic. The usage of those inside the for loop brings the coefficient n.
-    void get_closest_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int,PlaceID>> & places_in_order);
+    void get_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int,PlaceID>> & places_in_order);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
