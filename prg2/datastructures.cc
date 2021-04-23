@@ -449,8 +449,41 @@ std::vector<WayID> Datastructures::all_ways()
 
 bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
 {   
-    // Replace this comment with your implementation
-    return false;
+    if(ways_.find(id) != ways_.end()) // find() averagely constant for unordered_map, linear in worst case. end() is constant)
+    {
+        return false;
+    }
+
+    Distance dist = 0;
+    for(auto coord = coords.begin(); coord != coords.end()-1;
+        ++coord)
+    {
+        auto next_coord = coord +1 ;
+        Distance x_dist = next_coord->x-coord->x;
+        Distance y_dist = next_coord->y-coord->y;
+        Distance part_dist = floor(sqrt(pow(x_dist,2)+pow(y_dist,2)));
+        dist += part_dist;
+    }
+    std::vector<WayID> ways_before;
+    std::vector<WayID> ways_after;
+
+    // ADD COMMENTS HERE LATER
+    for(auto way : ways_)
+    {
+        if(way.second.way.at((way.second.way.size()-1))==coords.at(0))
+        {
+            ways_before.push_back(way.first);
+        }
+        if(way.second.way.at(0) == coords.at(coords.size()-1))
+        {
+            ways_after.push_back(way.first);
+        }
+    }
+    Way new_way = {coords,ways_before,ways_after,dist};
+    ways_.insert(std::make_pair(id,new_way));
+    return true;
+
+    // TÄN OPERAATION TEHOKKUUSARVIO PUUTTUU VIELÄ datastructures.hh:sta!!!!!
 }
 
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)

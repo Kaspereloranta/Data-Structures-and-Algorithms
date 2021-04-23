@@ -100,8 +100,8 @@ struct Area
 struct Way
 {
     std::vector<Coord> way;
-    std::vector<WayID> post_ways;           // if post_ways is empty, the end of the way is not a crossroad
     std::vector<WayID> ways_before;         // if ways_before is empty, the beginning of the way is not a crossroad
+    std::vector<WayID> ways_after;           // if post_ways is empty, the end of the way is not a crossroad
     Distance distance;
 };
 
