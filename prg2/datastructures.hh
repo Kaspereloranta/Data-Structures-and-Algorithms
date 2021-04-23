@@ -97,6 +97,14 @@ struct Area
     std::vector<AreaID> childrenAreas;
 };
 
+struct Way
+{
+    std::vector<Coord> way;
+    std::vector<WayID> post_ways;           // if post_ways is empty, the end of the way is not a crossroad
+    std::vector<WayID> ways_before;         // if ways_before is empty, the beginning of the way is not a crossroad
+    Distance distance;
+};
+
 // This is the class you are supposed to implement
 
 class Datastructures
@@ -288,8 +296,10 @@ public:
     // Short rationale for estimate:
     std::vector<Coord> get_way_coords(WayID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Linear. Theta(n)
+    // Short rationale for estimate: ways_ is unordered_map,
+    // and its method .clear() is linear on size, which is
+    // being used here.
     void clear_ways();
 
     // Estimate of performance:
@@ -346,6 +356,7 @@ private:
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
+    std::unordered_map<WayID,Way> ways_;
 };
 
 #endif // DATASTRUCTURES_HH
