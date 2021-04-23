@@ -438,8 +438,13 @@ void Datastructures::get_places_in_order(Coord xy, PlaceType type, std::map<doub
 }
 std::vector<WayID> Datastructures::all_ways()
 {
-    // Replace this comment with your implementation
-    return {};
+    std::vector<WayID> ways;
+    ways.reserve(ways_.size());
+    for(auto way : ways_)
+    {
+        ways.push_back(way.first); // constant, we reserved the exact right amount of memory
+    }                              // by using reserve(), so amortization does not happen.
+    return ways;
 }
 
 bool Datastructures::add_way(WayID id, std::vector<Coord> coords)

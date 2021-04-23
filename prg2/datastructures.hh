@@ -280,8 +280,11 @@ public:
 
     // Phase 2 operations
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Linear. Theta(n)
+    // Short rationale for estimate: push.back() for vector
+    // is true constant since we reserved the right amount of memory,
+    // and it is being used here inside
+    // a for loop that loops through all the ways.
     std::vector<WayID> all_ways();
 
     // Estimate of performance:
