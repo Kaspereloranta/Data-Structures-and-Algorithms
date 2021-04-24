@@ -453,37 +453,58 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         return false;
     }
-
+    // let's calculate the way's distance
     Distance dist = 0;
+    // for-loop complexity Theta(n)
     for(auto coord = coords.begin(); coord != coords.end()-1;
         ++coord)
     {
-        auto next_coord = coord +1 ;
+        auto next_coord = coord +1;
         Distance x_dist = next_coord->x-coord->x;
         Distance y_dist = next_coord->y-coord->y;
         Distance part_dist = floor(sqrt(pow(x_dist,2)+pow(y_dist,2)));
         dist += part_dist;
     }
-    std::vector<WayID> ways_before;
-    std::vector<WayID> ways_after;
 
-    // ADD COMMENTS HERE LATER
-    for(auto way : ways_)
-    {
-        if(way.second.way.at((way.second.way.size()-1))==coords.at(0))
-        {
-            ways_before.push_back(way.first);
-        }
-        if(way.second.way.at(0) == coords.at(coords.size()-1))
-        {
-            ways_after.push_back(way.first);
-        }
-    }
-    Way new_way = {coords,ways_before,ways_after,dist};
+    Way new_way = {coords,dist};
     ways_.insert(std::make_pair(id,new_way));
-    return true;
 
-    // TÄN OPERAATION TEHOKKUUSARVIO PUUTTUU VIELÄ datastructures.hh:sta!!!!!
+    // let's update nodes
+    // .front() and .back() for vector are constants on complexity
+    // .at(), .insert() and .find() for unordered_map are constants on average, linear on worst cases
+    // .insert() for unordered_set is constant on average, linear on worst case
+    // so therefore the construction of two if-else structures above is constant on average, but
+    // linear in worst case.
+    if(nodes_.find(coords.front()) == nodes_.end())
+    {
+        std::unordered_set<WayID> accessible_ways;
+        accessible_ways.insert(id);
+        std::unordered_set<Coord,CoordHash> accessible_nodes;
+        accessible_nodes.insert(coords.back());
+        Node new_node = {accessible_ways,accessible_nodes};
+        nodes_.insert(std::make_pair(coords.front(),new_node));
+    }
+    else
+    {
+        nodes_.at(coords.front()).accessible_ways.insert(id);
+        nodes_.at(coords.front()).accessible_nodes.insert(coords.back());
+    }
+    if(nodes_.find(coords.back()) == nodes_.end())
+    {
+        std::unordered_set<WayID> accessible_ways;
+        accessible_ways.insert(id);
+        std::unordered_set<Coord,CoordHash> accessible_nodes;
+        accessible_nodes.insert(coords.front());
+        Node new_node = {accessible_ways,accessible_nodes};
+        nodes_.insert(std::make_pair(coords.back(),new_node));
+    }
+    else
+    {
+        nodes_.at(coords.back()).accessible_ways.insert(id);
+        nodes_.at(coords.back()).accessible_nodes.insert(coords.front());
+    }
+
+    return true;
 }
 
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
@@ -501,6 +522,7 @@ std::vector<Coord> Datastructures::get_way_coords(WayID id)
 void Datastructures::clear_ways()
 {
     ways_.clear();
+    nodes_.clear();
 }
 
 std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord fromxy, Coord toxy)

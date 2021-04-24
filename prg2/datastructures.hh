@@ -97,11 +97,19 @@ struct Area
     std::vector<AreaID> childrenAreas;
 };
 
+struct Node
+{
+    std::unordered_set<WayID> accessible_ways;     // if ways.size() > 1, the node is
+    std::unordered_set<Coord,CoordHash> accessible_nodes;
+
+//    std::unordered_map<struct Node,struct Way> connections; <--- this may come handy later?
+    // add later the things             // a crossroad, otherwise it is an edge
+};  // you need to use graph-algorithms // of the graph or a separate node
+
+
 struct Way
 {
     std::vector<Coord> way;
-    std::vector<WayID> ways_before;         // if ways_before is empty, the beginning of the way is not a crossroad
-    std::vector<WayID> ways_after;           // if post_ways is empty, the end of the way is not a crossroad
     Distance distance;
 };
 
@@ -287,8 +295,11 @@ public:
     // a for loop that loops through all the ways.
     std::vector<WayID> all_ways();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Linear.  Theta(n).
+    // Short rationale for estimate: The calculation of the way's distance
+    // causes this methód to be linear. And it is exactly theta(n)
+    // since the calculation for-loop has to go through all the
+    // coordinates that creates the way which is given as a parameter
     bool add_way(WayID id, std::vector<Coord> coords);
 
     // Estimate of performance:
@@ -360,6 +371,7 @@ private:
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
     std::unordered_map<WayID,Way> ways_;
+    std::unordered_map<Coord,Node,CoordHash> nodes_;
 };
 
 #endif // DATASTRUCTURES_HH
