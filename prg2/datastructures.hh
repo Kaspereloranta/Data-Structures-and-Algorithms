@@ -109,7 +109,7 @@ struct Node
 
 struct Way
 {
-    std::vector<Coord> way;
+    std::vector<Coord> way; // harkitse tän uudelleennimeämistä selkiyttämisen vuoksi
     Distance distance;
 };
 

@@ -43,6 +43,8 @@ void Datastructures::clear_all()
 {
     places_.clear();
     areas_.clear();
+    ways_.clear();
+    nodes_.clear();
 }
 
 std::vector<PlaceID> Datastructures::all_places()
@@ -503,14 +505,41 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
         nodes_.at(coords.back()).accessible_ways.insert(id);
         nodes_.at(coords.back()).accessible_nodes.insert(coords.front());
     }
-
     return true;
 }
 
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 {
-    // Replace this comment with your implementation
-    return {{NO_WAY, NO_COORD}};
+
+    // TÄMÄN TEHOKKUUSARVIO PUUTTUU VIELÄ PUBLIC-RAJAPINNASTA
+
+    std::vector<std::pair<WayID, Coord>> ways_and_crossroads;
+    if(nodes_.find(xy) == nodes_.end())
+    {
+        return ways_and_crossroads; // there were no node at all at the given coordinate
+    }
+    if(nodes_.at(xy).accessible_ways.size() < 1 )
+    {
+         return ways_and_crossroads; // there were no crossroad at the given coordinate
+    }
+    for(WayID way : nodes_.at(xy).accessible_ways)
+    {
+        if(ways_.at(way).way.front() == xy)
+        {
+            if(nodes_.at(ways_.at(way).way.back()).accessible_ways.size() >= 1)  // accessible crossroad found
+            {
+                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).way.back()));
+            }
+        }
+        else if(ways_.at(way).way.back() == xy)
+        {
+            if(nodes_.at(ways_.at(way).way.front()).accessible_ways.size() >= 1)  // accessible crossroad found
+            {
+                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).way.front()));
+            }
+        }
+    }
+    return ways_and_crossroads;
 }
 
 std::vector<Coord> Datastructures::get_way_coords(WayID id)
