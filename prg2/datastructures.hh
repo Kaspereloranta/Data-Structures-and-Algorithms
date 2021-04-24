@@ -306,8 +306,10 @@ public:
     // Short rationale for estimate:
     std::vector<std::pair<WayID, Coord>> ways_from(Coord xy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Constant on average. Linear in worst case.
+    // Short rationale for estimate: // .at() and .find() for unordered_map
+    // are constant on average, linear on worst cases, .end() is constant for
+    // unordered_map, and no other method is being used here.
     std::vector<Coord> get_way_coords(WayID id);
 
     // Estimate of performance: Linear. Theta(n)

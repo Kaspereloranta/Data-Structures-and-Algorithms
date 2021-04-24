@@ -515,7 +515,13 @@ std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 
 std::vector<Coord> Datastructures::get_way_coords(WayID id)
 {
-    // Replace this comment with your implementation
+    // .at() and .find() for unordered_map are constant on average, linear on worst cases,
+    // .end() is constant for unordered_map
+    //
+    if(ways_.find(id) != ways_.end())
+    {
+        return ways_.at(id).way;
+    }
     return {NO_COORD};
 }
 
