@@ -580,7 +580,6 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     {
           return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of nodes were not crossroads.
     }
-
     // DFS
     restore_nodes();
     std::stack<Node> DFS_stack;
@@ -620,8 +619,8 @@ bool Datastructures::remove_way(WayID id)
     {
         return false;
     }
-    nodes_.at(ways_.at(id).coordinates.front()).accesses.erase(ways_.at(id).coordinates.front());   // average: constant
-    nodes_.at(ways_.at(id).coordinates.back()).accesses.erase((ways_.at(id).coordinates.back()));   // worst case: linear
+    nodes_.at(ways_.at(id).coordinates.front()).accesses.erase(ways_.at(id).coordinates.back());   // average: constant
+    nodes_.at(ways_.at(id).coordinates.back()).accesses.erase((ways_.at(id).coordinates.front()));   // worst case: linear
     ways_.erase(id);
     return true;
 }
