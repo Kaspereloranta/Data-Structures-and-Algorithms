@@ -81,7 +81,7 @@ using Distance = int;
 // Return value for cases where Duration is unknown
 Distance const NO_DISTANCE = NO_VALUE;
 
-enum Status {WHITE, GREY, BLACK};
+enum Status {WHITE, GRAY, BLACK};
 
 struct Place
 {
@@ -119,7 +119,6 @@ struct Way
 {
     std::vector<Coord> coordinates;
     Distance distance;
-    // päätepisteet vois ehkä olla erillisinä?
 };
 
 // This is the class you are supposed to implement
@@ -387,6 +386,8 @@ private:
     void restore_nodes();
 
     void find_DFS_route(std::vector<std::tuple<Coord, WayID, Distance>> & path, Node & node);
+
+    void recursive_DFS(Node & node);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;

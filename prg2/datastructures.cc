@@ -527,7 +527,6 @@ std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
     {
          return ways_and_crossroads; // there were no crossroad at the given coordinate
     }
-
     for(auto way : nodes_.at(xy).accesses)
     {
         if(ways_.at(way.second).coordinates.front() == xy) // .at() constant on average, worst case linear, .front() and .back() for vector are constants
@@ -581,59 +580,42 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     {
           return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of nodes were not crossroads.
     }
-    restore_nodes();
-
     // DFS
+    restore_nodes();
     std::stack<Node> DFS_stack;
     DFS_stack.push(nodes_.at(fromxy));
-    while(DFS_stack.size() > 0)
+    while (DFS_stack.size() > 0)
     {
+        qDebug() << DFS_stack.size();
         Node top_node = DFS_stack.top();
         DFS_stack.pop();
-        qDebug() << DFS_stack.size();
         if(top_node.node_status == WHITE)
         {
-            top_node.node_status = GREY;
+            top_node.node_status = GRAY;
             DFS_stack.push(top_node);
-            qDebug() << DFS_stack.size();
-
             for(auto neighbour : DFS_stack.top().accesses)
             {
                 if(nodes_.at(neighbour.first).node_status == WHITE)
                 {
-                    qDebug() << DFS_stack.size();
                     nodes_.at(neighbour.first).previous_node = DFS_stack.top().location;
+                    nodes_.at(neighbour.first).previous_way = neighbour.second;
                     nodes_.at(neighbour.first).route_distance_so_far = DFS_stack.top().route_distance_so_far +
                                                                        ways_.at(neighbour.second).distance;
-                    qDebug() << "väylän pituus " << nodes_.at(neighbour.first).route_distance_so_far;
-                    nodes_.at(neighbour.first).previous_way = neighbour.second;
-                    //DFS_stack.push(nodes_.at(neighbour.first));
+                    DFS_stack.push(nodes_.at(neighbour.first));
                 }
             }
-
         }
         else
         {
             top_node.node_status = BLACK;
         }
     }
-    qDebug() << " pituus " << nodes_.at(toxy).route_distance_so_far;
-
-    find_DFS_route(route,nodes_.at(toxy));
-    return route;
-}
-
-void Datastructures::find_DFS_route(std::vector<std::tuple<Coord, WayID, Distance> > & path, Node & node)
-{
-    qDebug() << " testi1" << node.route_distance_so_far;
-    if(node.route_distance_so_far > 0)
+    qDebug()<< nodes_.size();
+    for(auto node : nodes_)
     {
-        qDebug() << "testi2";
-        path.push_back(std::make_tuple(node.location,node.previous_way,node.route_distance_so_far));
-        qDebug() << node.location.x << " " << node.location.y << " " << node.route_distance_so_far;
-        find_DFS_route(path,nodes_.at(node.previous_node));
+        qDebug() << node.second.node_status <<" " << node.second.location.x << " " << node.second.location.y;
     }
-
+    return route;
 }
 
 bool Datastructures::remove_way(WayID id)
