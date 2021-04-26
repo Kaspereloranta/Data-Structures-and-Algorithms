@@ -103,7 +103,6 @@ struct Node
 {
     Coord location;
     std::unordered_map<Coord,WayID,CoordHash> accesses;
-
     Status node_status;
     Distance route_distance_so_far;
     Coord previous_node;
@@ -337,8 +336,11 @@ public:
 
     // Non-compulsory operations
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: Constant on average, linear on worst case.
+    // Short rationale for estimate: This method uses .find(), .end(), .at()
+    // and .erase() for unordered_map and .front() and .back() for vector,
+    // and all of these are either constants all the time or constants on average
+    // but linear in worst case.
     bool remove_way(WayID id);
 
     // Estimate of performance:

@@ -580,6 +580,7 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     {
           return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of nodes were not crossroads.
     }
+
     // DFS
     restore_nodes();
     std::stack<Node> DFS_stack;
@@ -601,7 +602,7 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
                     nodes_.at(neighbour.first).previous_way = neighbour.second;
                     nodes_.at(neighbour.first).route_distance_so_far = DFS_stack.top().route_distance_so_far +
                                                                        ways_.at(neighbour.second).distance;
-                    DFS_stack.push(nodes_.at(neighbour.first));
+                    //DFS_stack.push(nodes_.at(neighbour.first));
                 }
             }
         }
@@ -610,18 +611,19 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
             top_node.node_status = BLACK;
         }
     }
-    qDebug()<< nodes_.size();
-    for(auto node : nodes_)
-    {
-        qDebug() << node.second.node_status <<" " << node.second.location.x << " " << node.second.location.y;
-    }
     return route;
 }
 
 bool Datastructures::remove_way(WayID id)
 {
-    // Replace this comment with your implementation
-    return false;
+    if(ways_.find(id) == ways_.end()) // find() constant on average, linear on worst case, end() is constant
+    {
+        return false;
+    }
+    nodes_.at(ways_.at(id).coordinates.front()).accesses.erase(ways_.at(id).coordinates.front());   // average: constant
+    nodes_.at(ways_.at(id).coordinates.back()).accesses.erase((ways_.at(id).coordinates.back()));   // worst case: linear
+    ways_.erase(id);
+    return true;
 }
 
 std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_least_crossroads(Coord fromxy, Coord toxy)
