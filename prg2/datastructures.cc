@@ -508,7 +508,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     }
     else
     {
-        nodes_.at(coords.front()).accesses.insert(std::make_pair(coords.front(),id));
+        nodes_.at(coords.back()).accesses.insert(std::make_pair(coords.front(),id));
 
     }
     return true;
