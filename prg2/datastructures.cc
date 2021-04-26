@@ -43,8 +43,7 @@ void Datastructures::clear_all()
 {
     places_.clear();
     areas_.clear();
-    ways_.clear();
-    nodes_.clear();
+    clear_ways();
 }
 
 std::vector<PlaceID> Datastructures::all_places()
@@ -514,28 +513,30 @@ std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
     // TÄMÄN TEHOKKUUSARVIO PUUTTUU VIELÄ PUBLIC-RAJAPINNASTA
 
     std::vector<std::pair<WayID, Coord>> ways_and_crossroads;
-    if(nodes_.find(xy) == nodes_.end())
+    if(nodes_.find(xy) == nodes_.end()) // .find() constant on average, linear on worst case, .end() constant
     {
         return ways_and_crossroads; // there were no node at all at the given coordinate
     }
-    if(nodes_.at(xy).accessible_ways.size() < 1 )
+
+    if(nodes_.at(xy).accessible_ways.size() < 1 ) // .at() constant on average, worst case linear,
     {
          return ways_and_crossroads; // there were no crossroad at the given coordinate
     }
+
     for(WayID way : nodes_.at(xy).accessible_ways)
     {
-        if(ways_.at(way).way.front() == xy)
+        if(ways_.at(way).coordinates.front() == xy) // .at() constant on average, worst case linear, .front() and .back() for vector are constants
         {
-            if(nodes_.at(ways_.at(way).way.back()).accessible_ways.size() >= 1)  // accessible crossroad found
+            if(nodes_.at(ways_.at(way).coordinates.back()).accessible_ways.size() >= 1)  // accessible crossroad found
             {
-                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).way.back()));
+                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).coordinates.back())); //.push_back() is amortized constant
             }
         }
-        else if(ways_.at(way).way.back() == xy)
+        else if(ways_.at(way).coordinates.back() == xy)
         {
-            if(nodes_.at(ways_.at(way).way.front()).accessible_ways.size() >= 1)  // accessible crossroad found
+            if(nodes_.at(ways_.at(way).coordinates.front()).accessible_ways.size() >= 1)  // accessible crossroad found
             {
-                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).way.front()));
+                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).coordinates.front()));
             }
         }
     }
@@ -549,7 +550,7 @@ std::vector<Coord> Datastructures::get_way_coords(WayID id)
     //
     if(ways_.find(id) != ways_.end())
     {
-        return ways_.at(id).way;
+        return ways_.at(id).coordinates;
     }
     return {NO_COORD};
 }

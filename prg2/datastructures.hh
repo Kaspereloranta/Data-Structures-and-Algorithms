@@ -109,8 +109,9 @@ struct Node
 
 struct Way
 {
-    std::vector<Coord> way; // harkitse tän uudelleennimeämistä selkiyttämisen vuoksi
+    std::vector<Coord> coordinates;
     Distance distance;
+    // päätepisteet vois ehkä olla erillisinä?
 };
 
 // This is the class you are supposed to implement
@@ -302,8 +303,13 @@ public:
     // coordinates that creates the way which is given as a parameter
     bool add_way(WayID id, std::vector<Coord> coords);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: Usage of for-loop cause
+    // this operation to be O(n) on asymptotic efficiency. Methods used here
+    // are all either constants on all cases, or constant on average and on worst
+    // case linear. However, we can assume that on most cases they are rather consants
+    // than linear. It is O(n) and not theta(n) because there might be cases in which
+    // a crossroad has acces only to one road (and node).
     std::vector<std::pair<WayID, Coord>> ways_from(Coord xy);
 
     // Estimate of performance: Constant on average. Linear in worst case.
