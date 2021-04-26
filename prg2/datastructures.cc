@@ -437,6 +437,18 @@ void Datastructures::get_places_in_order(Coord xy, PlaceType type, std::map<doub
     }
     return;
 }
+
+void Datastructures::restore_nodes()
+{
+    for(auto node : nodes_)
+    {
+        node.second.node_status = WHITE;
+        node.second.route_distance_so_far = 0;
+        node.second.previous_node = NO_COORD;
+        node.second.previous_way = NO_WAY;
+    }
+}
+
 std::vector<WayID> Datastructures::all_ways()
 {
     std::vector<WayID> ways;
@@ -478,31 +490,26 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     // linear in worst case.
     if(nodes_.find(coords.front()) == nodes_.end())
     {
-        std::unordered_set<WayID> accessible_ways;
-        accessible_ways.insert(id);
-        std::unordered_set<Coord,CoordHash> accessible_nodes;
-        accessible_nodes.insert(coords.back());
-        Node new_node = {accessible_ways,accessible_nodes};
+        std::unordered_map<Coord,WayID,CoordHash> accesses;
+        accesses.insert(std::make_pair(coords.back(),id));
+        Node new_node = {coords.front(),accesses,WHITE,0,NO_COORD,NO_WAY};
         nodes_.insert(std::make_pair(coords.front(),new_node));
     }
     else
     {
-        nodes_.at(coords.front()).accessible_ways.insert(id);
-        nodes_.at(coords.front()).accessible_nodes.insert(coords.back());
+        nodes_.at(coords.front()).accesses.insert(std::make_pair(coords.back(),id));
     }
     if(nodes_.find(coords.back()) == nodes_.end())
     {
-        std::unordered_set<WayID> accessible_ways;
-        accessible_ways.insert(id);
-        std::unordered_set<Coord,CoordHash> accessible_nodes;
-        accessible_nodes.insert(coords.front());
-        Node new_node = {accessible_ways,accessible_nodes};
+        std::unordered_map<Coord,WayID,CoordHash> accesses;
+        accesses.insert(std::make_pair(coords.front(),id));
+        Node new_node = {coords.back(),accesses,WHITE,0,NO_COORD,NO_WAY};
         nodes_.insert(std::make_pair(coords.back(),new_node));
     }
     else
     {
-        nodes_.at(coords.back()).accessible_ways.insert(id);
-        nodes_.at(coords.back()).accessible_nodes.insert(coords.front());
+        nodes_.at(coords.front()).accesses.insert(std::make_pair(coords.front(),id));
+
     }
     return true;
 }
@@ -510,33 +517,31 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 {
 
-    // TÄMÄN TEHOKKUUSARVIO PUUTTUU VIELÄ PUBLIC-RAJAPINNASTA
-
     std::vector<std::pair<WayID, Coord>> ways_and_crossroads;
     if(nodes_.find(xy) == nodes_.end()) // .find() constant on average, linear on worst case, .end() constant
     {
         return ways_and_crossroads; // there were no node at all at the given coordinate
     }
 
-    if(nodes_.at(xy).accessible_ways.size() < 1 ) // .at() constant on average, worst case linear,
+    if(nodes_.at(xy).accesses.size() < 1 ) // .at() constant on average, worst case linear,
     {
          return ways_and_crossroads; // there were no crossroad at the given coordinate
     }
 
-    for(WayID way : nodes_.at(xy).accessible_ways)
+    for(auto way : nodes_.at(xy).accesses)
     {
-        if(ways_.at(way).coordinates.front() == xy) // .at() constant on average, worst case linear, .front() and .back() for vector are constants
+        if(ways_.at(way.second).coordinates.front() == xy) // .at() constant on average, worst case linear, .front() and .back() for vector are constants
         {
-            if(nodes_.at(ways_.at(way).coordinates.back()).accessible_ways.size() >= 1)  // accessible crossroad found
+            if(nodes_.at(ways_.at(way.second).coordinates.back()).accesses.size() >= 1)  // accessible crossroad found
             {
-                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).coordinates.back())); //.push_back() is amortized constant
+                ways_and_crossroads.push_back(std::make_pair(way.second,ways_.at(way.second).coordinates.back())); //.push_back() is amortized constant
             }
         }
-        else if(ways_.at(way).coordinates.back() == xy)
+        else if(ways_.at(way.second).coordinates.back() == xy)
         {
-            if(nodes_.at(ways_.at(way).coordinates.front()).accessible_ways.size() >= 1)  // accessible crossroad found
+            if(nodes_.at(ways_.at(way.second).coordinates.front()).accesses.size() >= 1)  // accessible crossroad found
             {
-                ways_and_crossroads.push_back(std::make_pair(way,ways_.at(way).coordinates.front()));
+                ways_and_crossroads.push_back(std::make_pair(way.second,ways_.at(way.second).coordinates.front()));
             }
         }
     }
@@ -563,8 +568,72 @@ void Datastructures::clear_ways()
 
 std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord fromxy, Coord toxy)
 {
-    // Replace this comment with your implementation
-    return {{NO_COORD, NO_WAY, NO_DISTANCE}};
+    std::vector<std::tuple<Coord, WayID, Distance>> route;
+
+    if(nodes_.find(fromxy) == nodes_.end() or
+            nodes_.find(toxy) == nodes_.end()) // .find() constant on average, linear on worst case, .end() constant
+    {
+        return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of coordinates were not nodes.
+    }
+
+    if(nodes_.at(fromxy).accesses.size() < 1 or
+       nodes_.at(toxy).accesses.size() < 1) // .at() constant on average, worst case linear,
+    {
+          return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of nodes were not crossroads.
+    }
+    restore_nodes();
+
+    // DFS
+    std::stack<Node> DFS_stack;
+    DFS_stack.push(nodes_.at(fromxy));
+    while(DFS_stack.size() > 0)
+    {
+        Node top_node = DFS_stack.top();
+        DFS_stack.pop();
+        qDebug() << DFS_stack.size();
+        if(top_node.node_status == WHITE)
+        {
+            top_node.node_status = GREY;
+            DFS_stack.push(top_node);
+            qDebug() << DFS_stack.size();
+
+            for(auto neighbour : DFS_stack.top().accesses)
+            {
+                if(nodes_.at(neighbour.first).node_status == WHITE)
+                {
+                    qDebug() << DFS_stack.size();
+                    nodes_.at(neighbour.first).previous_node = DFS_stack.top().location;
+                    nodes_.at(neighbour.first).route_distance_so_far = DFS_stack.top().route_distance_so_far +
+                                                                       ways_.at(neighbour.second).distance;
+                    qDebug() << "väylän pituus " << nodes_.at(neighbour.first).route_distance_so_far;
+                    nodes_.at(neighbour.first).previous_way = neighbour.second;
+                    //DFS_stack.push(nodes_.at(neighbour.first));
+                }
+            }
+
+        }
+        else
+        {
+            top_node.node_status = BLACK;
+        }
+    }
+    qDebug() << " pituus " << nodes_.at(toxy).route_distance_so_far;
+
+    find_DFS_route(route,nodes_.at(toxy));
+    return route;
+}
+
+void Datastructures::find_DFS_route(std::vector<std::tuple<Coord, WayID, Distance> > & path, Node & node)
+{
+    qDebug() << " testi1" << node.route_distance_so_far;
+    if(node.route_distance_so_far > 0)
+    {
+        qDebug() << "testi2";
+        path.push_back(std::make_tuple(node.location,node.previous_way,node.route_distance_so_far));
+        qDebug() << node.location.x << " " << node.location.y << " " << node.route_distance_so_far;
+        find_DFS_route(path,nodes_.at(node.previous_node));
+    }
+
 }
 
 bool Datastructures::remove_way(WayID id)

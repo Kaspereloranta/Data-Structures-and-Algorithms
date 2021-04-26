@@ -81,6 +81,8 @@ using Distance = int;
 // Return value for cases where Duration is unknown
 Distance const NO_DISTANCE = NO_VALUE;
 
+enum Status {WHITE, GREY, BLACK};
+
 struct Place
 {
     Name placeName;
@@ -99,8 +101,14 @@ struct Area
 
 struct Node
 {
-    std::unordered_set<WayID> accessible_ways;     // if ways.size() > 1, the node is
-    std::unordered_set<Coord,CoordHash> accessible_nodes;
+    Coord location;
+    std::unordered_map<Coord,WayID,CoordHash> accesses;
+
+    Status node_status;
+    Distance route_distance_so_far;
+    Coord previous_node;
+    WayID previous_way;
+
 
 //    std::unordered_map<struct Node,struct Way> connections; <--- this may come handy later?
     // add later the things             // a crossroad, otherwise it is an edge
@@ -375,6 +383,10 @@ private:
     // inside the for loop is the most inefficient operation done here, and the complexity for both of
     // those operations are logarithmic. The usage of those inside the for loop brings the coefficient n.
     void get_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int,PlaceID>> & places_in_order);
+
+    void restore_nodes();
+
+    void find_DFS_route(std::vector<std::tuple<Coord, WayID, Distance>> & path, Node & node);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
