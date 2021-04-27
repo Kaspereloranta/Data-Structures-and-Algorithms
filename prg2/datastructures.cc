@@ -440,13 +440,14 @@ void Datastructures::get_places_in_order(Coord xy, PlaceType type, std::map<doub
 
 void Datastructures::restore_nodes()
 {
-
+    // TÄMÄN VOISI EHKÄ TOTEUTTAA TEHOKKAAMMINKIN, JOS KÄYTTÄÄ OSOITTIMIA TIETORAKENTEESSA nodes_
+    // Nyt periaatteessa worst case O(n^2), keskimäärin kuitenkin theta(n). MUISTA PÄIVITTÄÄ TÄMÄ HH-tiedostoon!!!!
     for(auto node : nodes_)
     {
-        node.second.node_status = WHITE;
-        node.second.route_distance_so_far = 0;
-        node.second.previous_node = NO_COORD;
-        node.second.previous_way = NO_WAY;
+        nodes_.at(node.first).node_status = WHITE;
+        nodes_.at(node.first).route_distance_so_far = 0;
+        nodes_.at(node.first).previous_node = nullptr;
+        nodes_.at(node.first).previous_way = NO_WAY;
     }
 }
 
@@ -493,7 +494,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         std::unordered_map<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.back(),id));
-        Node new_node = {coords.front(),accesses,WHITE,0,NO_COORD,NO_WAY};
+        Node new_node = {coords.front(),accesses,WHITE,0,nullptr,NO_WAY};
         nodes_.insert(std::make_pair(coords.front(),new_node));
     }
     else
@@ -504,7 +505,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         std::unordered_map<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.front(),id));
-        Node new_node = {coords.back(),accesses,WHITE,0,NO_COORD,NO_WAY};
+        Node new_node = {coords.back(),accesses,WHITE,0,nullptr,NO_WAY};
         nodes_.insert(std::make_pair(coords.back(),new_node));
     }
     else
@@ -581,7 +582,30 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     {
           return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of nodes were not crossroads.
     }
-    // DFS
+
+    DFS(fromxy,toxy);
+
+    Node* current_node_1 = &nodes_.at(toxy);
+    Node* current_node_2 = nodes_.at(toxy).previous_node;
+    route.push_back(std::make_tuple(current_node_1->location,NO_WAY,current_node_1->route_distance_so_far));
+    // tässä ikuisen loopin vaara? mitä tapahtuu jos reittiä ei löytynyt? säädä myöhemmin
+    while(true)
+    {
+        route.push_back(std::make_tuple(current_node_2->location,current_node_1->previous_way,current_node_2->route_distance_so_far));
+        if(current_node_2->location == fromxy)
+        {
+            break;
+        }
+        current_node_1 = current_node_2;
+        current_node_2 = current_node_2->previous_node;
+    }
+    std::reverse(route.begin(),route.end()); // O(n/2)
+    return route;
+}
+
+
+void Datastructures::DFS(Coord & fromxy, Coord & toxy)
+{
     restore_nodes();
     std::stack<Node*> DFS_stack;
     Node* starting_point = &nodes_.at(fromxy);
@@ -594,13 +618,19 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
         {
             top_node->node_status = GRAY;
             DFS_stack.push(top_node);
+            if(top_node->location == toxy)
+            {
+                top_node->node_status = BLACK;
+                DFS_stack = {};
+                break;
+            }
             for(auto neighbour : DFS_stack.top()->accesses)
             {
                 if(nodes_.at(neighbour.first).node_status == WHITE)
                 {
-                    nodes_.at(neighbour.first).previous_node = DFS_stack.top()->location;
+                    nodes_.at(neighbour.first).previous_node = top_node;
                     nodes_.at(neighbour.first).previous_way = neighbour.second;
-                    nodes_.at(neighbour.first).route_distance_so_far = DFS_stack.top()->route_distance_so_far +
+                    nodes_.at(neighbour.first).route_distance_so_far = top_node->route_distance_so_far +
                                                                        ways_.at(neighbour.second).distance;
                     DFS_stack.push(&nodes_.at(neighbour.first));
                 }
@@ -611,18 +641,8 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
             top_node->node_status = BLACK;
         }
     }
-
-    return route;
-
 }
 
-void Datastructures::DFS_route_to_vector(std::vector<std::tuple<Coord, WayID, Distance> > &route, Node &node)
-{
-    if(node.route_distance_so_far > 0)
-    {
-
-    }
-}
 
 bool Datastructures::remove_way(WayID id)
 {
