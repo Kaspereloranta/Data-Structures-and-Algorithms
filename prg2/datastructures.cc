@@ -589,17 +589,25 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     Node* current_node_2 = nodes_.at(toxy).previous_node;
     route.push_back(std::make_tuple(current_node_1->location,NO_WAY,current_node_1->route_distance_so_far));
     // tässä ikuisen loopin vaara? mitä tapahtuu jos reittiä ei löytynyt? säädä myöhemmin
-    while(true)
+    if(current_node_1->previous_node != nullptr) // if we enter to this if-structure, the route was found
     {
-        route.push_back(std::make_tuple(current_node_2->location,current_node_1->previous_way,current_node_2->route_distance_so_far));
-        if(current_node_2->location == fromxy)
-        {
-            break;
+        while(true) // and because route was found, this while-loop won't be an infinite loop
+        {           // because at some point the starting point (fromxy) will be found
+                    // and when it happens, we use break; to shut the loop down.
+            route.push_back(std::make_tuple(current_node_2->location,current_node_1->previous_way,current_node_2->route_distance_so_far));
+            if(current_node_2->location == fromxy)
+            {
+                break;
+            }
+            current_node_1 = current_node_2;
+            current_node_2 = current_node_2->previous_node;
         }
-        current_node_1 = current_node_2;
-        current_node_2 = current_node_2->previous_node;
+        std::reverse(route.begin(),route.end()); // O(n/2)
+        return route;
     }
-    std::reverse(route.begin(),route.end()); // O(n/2)
+
+    //if we enter here, the route was not found
+    route = {};
     return route;
 }
 
