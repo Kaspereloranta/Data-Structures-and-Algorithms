@@ -107,7 +107,7 @@ struct Node
     std::unordered_map<Coord,WayID,CoordHash> accesses;
     Status node_status;
     Distance route_distance_so_far;
-    Coord previous_node;
+    Node* previous_node;
     WayID previous_way;
 
 
@@ -332,8 +332,9 @@ public:
     // being used here.
     void clear_ways();
 
-    // Estimate of performance:
+    // Estimate of performance: TÄMÄ PUUTTUU VIELÄ
     // Short rationale for estimate:
+    // LISÄKSI METODIN TOTEUSTA EHKÄ VOI PILKKOA PIENEMPIIN OSIIN?
     std::vector<std::tuple<Coord, WayID, Distance>> route_any(Coord fromxy, Coord toxy);
 
     // Non-compulsory operations
@@ -389,7 +390,7 @@ private:
 
     void restore_nodes();
 
-    void DFS_route_to_vector(std::vector<std::tuple<Coord, WayID, Distance>> & route, Node & node);
+    void DFS(Coord & fromxy, Coord & toxy);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
