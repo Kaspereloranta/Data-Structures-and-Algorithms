@@ -102,6 +102,8 @@ struct Area
 struct Node
 {
     Coord location;
+    // harkitse allaolevan rakenteen muuttamista siten, että avaimina on osoittimia Nodeihin
+    // Voi olla hankalaa, saattaa tarvita oman hajautusfunktion? Jos tarvii, ÄLÄ EDES YRITÄ
     std::unordered_map<Coord,WayID,CoordHash> accesses;
     Status node_status;
     Distance route_distance_so_far;
@@ -302,7 +304,7 @@ public:
     // a for loop that loops through all the ways.
     std::vector<WayID> all_ways();
 
-    // Estimate of performance: Linear.  Theta(n).
+    // Estimate of performance: Linear.  Theta(n). <-- CHECK THIS
     // Short rationale for estimate: The calculation of the way's distance
     // causes this methód to be linear. And it is exactly theta(n)
     // since the calculation for-loop has to go through all the
@@ -387,9 +389,7 @@ private:
 
     void restore_nodes();
 
-    void find_DFS_route(std::vector<std::tuple<Coord, WayID, Distance>> & path, Node & node);
-
-    void recursive_DFS(Node & node);
+    void DFS_route_to_vector(std::vector<std::tuple<Coord, WayID, Distance>> & route, Node & node);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;

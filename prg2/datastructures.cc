@@ -440,6 +440,7 @@ void Datastructures::get_places_in_order(Coord xy, PlaceType type, std::map<doub
 
 void Datastructures::restore_nodes()
 {
+
     for(auto node : nodes_)
     {
         node.second.node_status = WHITE;
@@ -582,35 +583,45 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     }
     // DFS
     restore_nodes();
-    std::stack<Node> DFS_stack;
-    DFS_stack.push(nodes_.at(fromxy));
+    std::stack<Node*> DFS_stack;
+    Node* starting_point = &nodes_.at(fromxy);
+    DFS_stack.push(starting_point);
     while (DFS_stack.size() > 0)
     {
-        qDebug() << DFS_stack.size();
-        Node top_node = DFS_stack.top();
+        Node* top_node = DFS_stack.top();
         DFS_stack.pop();
-        if(top_node.node_status == WHITE)
+        if(top_node->node_status == WHITE)
         {
-            top_node.node_status = GRAY;
+            top_node->node_status = GRAY;
             DFS_stack.push(top_node);
-            for(auto neighbour : DFS_stack.top().accesses)
+            for(auto neighbour : DFS_stack.top()->accesses)
             {
                 if(nodes_.at(neighbour.first).node_status == WHITE)
                 {
-                    nodes_.at(neighbour.first).previous_node = DFS_stack.top().location;
+                    nodes_.at(neighbour.first).previous_node = DFS_stack.top()->location;
                     nodes_.at(neighbour.first).previous_way = neighbour.second;
-                    nodes_.at(neighbour.first).route_distance_so_far = DFS_stack.top().route_distance_so_far +
+                    nodes_.at(neighbour.first).route_distance_so_far = DFS_stack.top()->route_distance_so_far +
                                                                        ways_.at(neighbour.second).distance;
-                    //DFS_stack.push(nodes_.at(neighbour.first));
+                    DFS_stack.push(&nodes_.at(neighbour.first));
                 }
             }
         }
         else
         {
-            top_node.node_status = BLACK;
+            top_node->node_status = BLACK;
         }
     }
+
     return route;
+
+}
+
+void Datastructures::DFS_route_to_vector(std::vector<std::tuple<Coord, WayID, Distance> > &route, Node &node)
+{
+    if(node.route_distance_so_far > 0)
+    {
+
+    }
 }
 
 bool Datastructures::remove_way(WayID id)
