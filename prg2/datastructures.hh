@@ -297,11 +297,16 @@ public:
 
     // Phase 2 operations
 
-    // Estimate of performance: Linear. Theta(n)
-    // Short rationale for estimate: push.back() for vector
-    // is true constant since we reserved the right amount of memory,
-    // and it is being used here inside
-    // a for loop that loops through all the ways.
+    // Estimate of performance: Linear. O(n)
+    // Short rationale for estimate:
+    // This method reserves the exact right amount memory for the
+    // vector what this method returns by using .reserve(ways_.size())
+    // Hence, push_back for that vector is constant all the time
+    // and reallocation won't happen inside the for loop.
+    // .reserve() and for-loop are both O(n), which means that
+    // this method's complexity is O(n) as well. It is O(n)
+    // and not theta(n) because if there are no ways at all,
+    // this method is constant on complexity.
     std::vector<WayID> all_ways();
 
     // Estimate of performance: Linear.  Theta(n). <-- CHECK THIS
@@ -326,10 +331,13 @@ public:
     // unordered_map, and no other method is being used here.
     std::vector<Coord> get_way_coords(WayID id);
 
-    // Estimate of performance: Linear. Theta(n)
+    // Estimate of performance: Linear. O(n)
     // Short rationale for estimate: ways_ is unordered_map,
     // and its method .clear() is linear on size, which is
-    // being used here.
+    // being used here. Allthough, if ways have been already
+    // cleared earlier or there is no ways added at all
+    // this operation is constant in complexity because
+    // there is no a single element to be removed.
     void clear_ways();
 
     // Estimate of performance: TÄMÄ PUUTTUU VIELÄ
@@ -388,8 +396,12 @@ private:
     // those operations are logarithmic. The usage of those inside the for loop brings the coefficient n.
     void get_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int,PlaceID>> & places_in_order);
 
+    Distance calculate_distance(std::vector<Coord> const coords);
+
+    // Estimate of performance:
     void restore_nodes();
 
+    // Estimate of performance:
     void DFS(Coord & fromxy, Coord & toxy);
 
     std::unordered_map<PlaceID,Place> places_;

@@ -454,11 +454,11 @@ void Datastructures::restore_nodes()
 std::vector<WayID> Datastructures::all_ways()
 {
     std::vector<WayID> ways;
-    ways.reserve(ways_.size());
-    for(auto way : ways_)
-    {
-        ways.push_back(way.first); // constant, we reserved the exact right amount of memory
-    }                              // by using reserve(), so amortization does not happen.
+    ways.reserve(ways_.size());     // .size() for unordered_map is consant on complexity
+    for(auto way : ways_)           // .reserve() for vector is now O(n), it depends
+    {                               // on size of ways_.
+        ways.push_back(way.first); // push_back() is now constant, we reserved the exact right amount of memory
+    }                              // by using reserve() earlier, so reallocation does not happen.
     return ways;
 }
 
@@ -468,20 +468,9 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         return false;
     }
-    // let's calculate the way's distance
-    Distance dist = 0;
-    // for-loop complexity Theta(n)
-    for(auto coord = coords.begin(); coord != coords.end()-1;
-        ++coord)
-    {
-        auto next_coord = coord +1;
-        Distance x_dist = next_coord->x-coord->x;
-        Distance y_dist = next_coord->y-coord->y;
-        Distance part_dist = floor(sqrt(pow(x_dist,2)+pow(y_dist,2)));
-        dist += part_dist;
-    }
 
-    Way new_way = {coords,dist};
+    Distance way_distance = calculate_distance(coords);
+    Way new_way = {coords,way_distance};
     ways_.insert(std::make_pair(id,new_way));
 
     // let's update nodes
@@ -514,6 +503,22 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
 
     }
     return true;
+}
+
+Distance Datastructures::calculate_distance(const std::vector<Coord> coords)
+{
+    Distance dist = 0;
+    // for-loop complexity Theta(n)
+    for(auto coord = coords.begin(); coord != coords.end()-1;
+        ++coord)
+    {
+        auto next_coord = coord +1;
+        Distance x_dist = next_coord->x-coord->x;
+        Distance y_dist = next_coord->y-coord->y;
+        Distance part_dist = floor(sqrt(pow(x_dist,2)+pow(y_dist,2)));
+        dist += part_dist;
+    }
+    return dist;
 }
 
 std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
@@ -563,8 +568,8 @@ std::vector<Coord> Datastructures::get_way_coords(WayID id)
 
 void Datastructures::clear_ways()
 {
-    ways_.clear();
-    nodes_.clear();
+    ways_.clear();      // .clear()'s complexity
+    nodes_.clear();     // for unordered map ilinear on size
 }
 
 std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord fromxy, Coord toxy)
