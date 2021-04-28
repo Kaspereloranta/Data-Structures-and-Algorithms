@@ -683,14 +683,12 @@ Node* Datastructures::DFS_cycle(Coord &fromxy)
     // the amount of edges in a graph.
     std::stack<Node*> DFS_stack;
     Node* starting_point = &nodes_.at(fromxy); // .at() constant on average, linear in worst case.
-    starting_point->route_distance_so_far = 0;
     starting_point->steps_taken = 0;
     DFS_stack.push(starting_point);
     while (DFS_stack.size() > 0)
     {
         Node* top_node = DFS_stack.top();
         DFS_stack.pop();
-        Node* node_previously_handled;
         if(top_node->node_status == WHITE)
         {
             top_node->node_status = GRAY;
@@ -701,17 +699,19 @@ Node* Datastructures::DFS_cycle(Coord &fromxy)
                 {
                     nodes_.at(neighbour.first).previous_node = top_node;
                     nodes_.at(neighbour.first).previous_way = neighbour.second;
+                    nodes_.at(neighbour.first).steps_taken = top_node->steps_taken + 1;
                     DFS_stack.push(&nodes_.at(neighbour.first));
                 }
-                else if(nodes_.at(neighbour.first).node_status == GRAY and
-                        &nodes_.at(neighbour.first) != node_previously_handled) // cycle found
+                else if(nodes_.at(neighbour.first).node_status == GRAY
+                        and top_node->steps_taken - nodes_.at(neighbour.first).steps_taken > 1) // true cycle found
                 {
+                    qDebug() << nodes_.at(neighbour.first).location.x << nodes_.at(neighbour.first).location.y;
+                    qDebug() << "------";
                     nodes_.at(neighbour.first).secondary_previous_node = top_node;
                     nodes_.at(neighbour.first).secondary_previous_way = neighbour.second;
                     return &nodes_.at(neighbour.first);
                 }
             }
-            node_previously_handled = top_node;
         }
         else
         {
