@@ -10,6 +10,7 @@
 #include <limits>
 #include <functional>
 #include <stack>
+#include <queue>
 #include <unordered_set>
 #include <unordered_map>
 #include <set>
@@ -106,6 +107,7 @@ struct Node
     // Voi olla hankalaa, saattaa tarvita oman hajautusfunktion? Jos tarvii, ÄLÄ EDES YRITÄ
     std::unordered_map<Coord,WayID,CoordHash> accesses;
     Status node_status;
+    Distance steps_taken;
     Distance route_distance_so_far;
     Node* previous_node;
     WayID previous_way;
@@ -441,6 +443,8 @@ private:
     // and lectures of this course. We can simplify its asymptotic efficiency
     // by stating that its complexity is O(n).
     void DFS(Coord & fromxy, Coord & toxy);
+
+    void BFS(Coord & fromxy, Coord & toxy);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
