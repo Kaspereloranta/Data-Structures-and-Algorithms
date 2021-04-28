@@ -309,24 +309,30 @@ public:
     // this method is constant on complexity.
     std::vector<WayID> all_ways();
 
-    // Estimate of performance: Linear.  Theta(n). <-- CHECK THIS
-    // Short rationale for estimate: The calculation of the way's distance
-    // causes this methód to be linear. And it is exactly theta(n)
-    // since the calculation for-loop has to go through all the
-    // coordinates that creates the way which is given as a parameter
+    // Estimate of performance: Linear, O(n).
+    // Short rationale for estimate: This method calls
+    // method calculate_distance, which is defined in the private
+    // interface of the class, and its complexity is O(n). All other
+    // operations this method uses are either constants or constants
+    // on average, but linear in worst cases. Therefore, this method's
+    // performance is O(n).
     bool add_way(WayID id, std::vector<Coord> coords);
 
     // Estimate of performance: O(n)
     // Short rationale for estimate: Usage of for-loop cause
-    // this operation to be O(n) on asymptotic efficiency. Methods used here
+    // this operation to be O(n) on complexity. Methods used here
     // are all either constants on all cases, or constant on average and on worst
     // case linear. However, we can assume that on most cases they are rather consants
     // than linear. It is O(n) and not theta(n) because there might be cases in which
-    // a crossroad has acces only to one road (and node).
+    // there are no node or crossroad at all at the given coordinate, or a crossroad has acces only
+    // to one way and node. .at() for unordered_map is constant on average but linear on worst case.
+    // .at() is being used here inside a for-loop, but I assume that it's constant whenever this
+    // operation calls it inside a for-loop. Check the implementation of this operation for
+    // more details.
     std::vector<std::pair<WayID, Coord>> ways_from(Coord xy);
 
     // Estimate of performance: Constant on average. Linear in worst case.
-    // Short rationale for estimate: // .at() and .find() for unordered_map
+    // Short rationale for estimate: .at() and .find() for unordered_map
     // are constant on average, linear on worst cases, .end() is constant for
     // unordered_map, and no other method is being used here.
     std::vector<Coord> get_way_coords(WayID id);
@@ -340,9 +346,15 @@ public:
     // there is no a single element to be removed.
     void clear_ways();
 
-    // Estimate of performance: TÄMÄ PUUTTUU VIELÄ
-    // Short rationale for estimate:
-    // LISÄKSI METODIN TOTEUSTA EHKÄ VOI PILKKOA PIENEMPIIN OSIIN?
+    // Estimate of performance: O(n).
+    // Short rationale for estimate: This operation uses the DFS
+    // to find some route between fromxy and toxy and its complexity is O(n).
+    // When the DFS is done, this operation loops inside a while loop backwards
+    // from the target node all the way back to the starting point and adds
+    // items to vector, and after looping reverses the vector completely by using .reverse() because
+    // otherwise it would be in reversed order starting from toxy and ending to fromxy.
+    // While loop's complexity is O(n) and .reserve()'s complexity is O(n/2), so we can
+    // say that the complexity of this oepration is O(n).
     std::vector<std::tuple<Coord, WayID, Distance>> route_any(Coord fromxy, Coord toxy);
 
     // Non-compulsory operations
@@ -396,12 +408,38 @@ private:
     // those operations are logarithmic. The usage of those inside the for loop brings the coefficient n.
     void get_places_in_order(Coord xy, PlaceType type, std::map<double,std::multimap<int,PlaceID>> & places_in_order);
 
+    // Estimate of performance: Linear. O(n)
+    // Short rationale for estimate: This method calculates
+    // the total distance of the way which's coordinates are
+    // given as a parameter inside a vector. Calculation
+    // is done inside a for-loop, so it causes this operation to be linear.
+    // It is O(n) and not Theta(n) because if the given vector is
+    // empty or includes only one coordinate, the execution of this
+    // operation is ended before the for-loop, and if that's the case
+    // this operation is constant.
     Distance calculate_distance(std::vector<Coord> const coords);
 
-    // Estimate of performance:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate:
+    // If there are no nodes at all or there are only one,
+    // this operation is constant on complexity.
+    // the complexity of this operation grows linearly with
+    // the size of nodes_, because this operation loops through
+    // all the nodes inside a for-loop. .at() is used inside
+    // a for-loop for unordered_map here, but it is constant
+    // in all the cases, because the for-loop ensures
+    // that it is called only for those nodes that truly
+    // exist in nodes_.
     void restore_nodes();
 
-    // Estimate of performance:
+    // Estimate of performance: Linear. O(n). (O(V+E)).
+    // Short rationale for estimate: This operation
+    // executes DFS for the graph-structure, which
+    // includes Nodes and Ways, and its  complexity
+    // is O(V+E), in which V is the amount of nodes in a graph, and E is
+    // the amount of edges in a graph, according to the common knowledge
+    // and lectures of this course. We can simplify its asymptotic efficiency
+    // by stating that its complexity is O(n).
     void DFS(Coord & fromxy, Coord & toxy);
 
     std::unordered_map<PlaceID,Place> places_;

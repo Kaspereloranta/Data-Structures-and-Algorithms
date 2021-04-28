@@ -440,8 +440,10 @@ void Datastructures::get_places_in_order(Coord xy, PlaceType type, std::map<doub
 
 void Datastructures::restore_nodes()
 {
-    // TÄMÄN VOISI EHKÄ TOTEUTTAA TEHOKKAAMMINKIN, JOS KÄYTTÄÄ OSOITTIMIA TIETORAKENTEESSA nodes_
-    // Nyt periaatteessa worst case O(n^2), keskimäärin kuitenkin theta(n). MUISTA PÄIVITTÄÄ TÄMÄ HH-tiedostoon!!!!
+    // O(n). .at() for unordered_map is constant
+    // inside the for-loop, because it is called
+    // only for keys that exist in nodes_.
+    // this is ensured by for-loop ( node : nodes_)
     for(auto node : nodes_)
     {
         nodes_.at(node.first).node_status = WHITE;
@@ -469,16 +471,19 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
         return false;
     }
 
+    // calculate_distance's complexity is O(n).
     Distance way_distance = calculate_distance(coords);
+
     Way new_way = {coords,way_distance};
     ways_.insert(std::make_pair(id,new_way));
 
     // let's update nodes
     // .front() and .back() for vector are constants on complexity
     // .at(), .insert() and .find() for unordered_map are constants on average, linear on worst cases
-    // .insert() for unordered_set is constant on average, linear on worst case
-    // so therefore the construction of two if-else structures above is constant on average, but
-    // linear in worst case.
+    // .end() for unordered_map is constant on complexity
+    // std::make_pair is constant
+    // so the whole node-update-process above are constant on average case, but
+    // in the worst case it's linear.
     if(nodes_.find(coords.front()) == nodes_.end())
     {
         std::unordered_map<Coord,WayID,CoordHash> accesses;
@@ -508,8 +513,12 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
 Distance Datastructures::calculate_distance(const std::vector<Coord> coords)
 {
     Distance dist = 0;
+    if(coords.size() <= 1) //.size() is constant
+    {
+        return dist;
+    }
     // for-loop complexity Theta(n)
-    for(auto coord = coords.begin(); coord != coords.end()-1;
+    for(auto coord = coords.begin(); coord != coords.end()-1; //.begin() and .end() are consants
         ++coord)
     {
         auto next_coord = coord +1;
@@ -525,30 +534,34 @@ std::vector<std::pair<WayID, Coord>> Datastructures::ways_from(Coord xy)
 {
 
     std::vector<std::pair<WayID, Coord>> ways_and_crossroads;
-    if(nodes_.find(xy) == nodes_.end()) // .find() constant on average, linear on worst case, .end() constant
+    if(nodes_.find(xy) == nodes_.end()) // for unordered_map, .find() constant on average, linear on worst case, .end() constant
     {
         return ways_and_crossroads; // there were no node at all at the given coordinate
     }
 
-    if(nodes_.at(xy).accesses.size() < 1 ) // .at() constant on average, worst case linear,
+    if(nodes_.at(xy).accesses.size() < 1 ) // for unordered_map, .at() constant on average, worst case linear,
     {
          return ways_and_crossroads; // there were no crossroad at the given coordinate
     }
+
+    // The for-loop above is O(n). Theoretically, it could be O(n^2) because
+    // .at() for unordered_map is constant on average, but linear on worst case, but
+    // I assume that .at() is constant here all the time, because all unordered_map
+    // keys that are given here as a parameter for .at() exists in nodes_, because the execution
+    // of this operation will be ended earlier if it did not.
     for(auto way : nodes_.at(xy).accesses)
     {
-        if(ways_.at(way.second).coordinates.front() == xy) // .at() constant on average, worst case linear, .front() and .back() for vector are constants
+        // TÄTÄ ALLAOLEVAA IF-ELSEÄ KARSITTU, JOS TULEE ONGELMIA MYÖHEMMIN TSEKKAA GIT JA TESTAA VANHALLA VERSIOLLA
+
+        // for unordered_map, .at() constant on average, worst case linear, .front() and .back() for vector are constants
+        // .push_back() is amortized constant for vector, std::make_pair is constant
+        if(ways_.at(way.second).coordinates.front() == xy)
         {
-            if(nodes_.at(ways_.at(way.second).coordinates.back()).accesses.size() >= 1)  // accessible crossroad found
-            {
-                ways_and_crossroads.push_back(std::make_pair(way.second,ways_.at(way.second).coordinates.back())); //.push_back() is amortized constant
-            }
+                ways_and_crossroads.push_back(std::make_pair(way.second,ways_.at(way.second).coordinates.back()));
         }
         else if(ways_.at(way.second).coordinates.back() == xy)
         {
-            if(nodes_.at(ways_.at(way.second).coordinates.front()).accesses.size() >= 1)  // accessible crossroad found
-            {
                 ways_and_crossroads.push_back(std::make_pair(way.second,ways_.at(way.second).coordinates.front()));
-            }
         }
     }
     return ways_and_crossroads;
@@ -577,26 +590,28 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     std::vector<std::tuple<Coord, WayID, Distance>> route;
 
     if(nodes_.find(fromxy) == nodes_.end() or
-            nodes_.find(toxy) == nodes_.end()) // .find() constant on average, linear on worst case, .end() constant
+            nodes_.find(toxy) == nodes_.end()) // for unordered_map .find() is constant on average, linear on worst case, .end() constant
     {
         return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of coordinates were not nodes.
     }
 
     if(nodes_.at(fromxy).accesses.size() < 1 or
-       nodes_.at(toxy).accesses.size() < 1) // .at() constant on average, worst case linear,
+       nodes_.at(toxy).accesses.size() < 1) // for unordered_map .find() .at() constant on average, worst case linear,
     {
           return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of nodes were not crossroads.
     }
 
+    // O(V+E) = O(N)
     DFS(fromxy,toxy);
 
-    Node* current_node_1 = &nodes_.at(toxy);
+    Node* current_node_1 = &nodes_.at(toxy); //.at() is now constant, becaue the node with Coord toxy exists in nodes_
     Node* current_node_2 = nodes_.at(toxy).previous_node;
-    route.push_back(std::make_tuple(current_node_1->location,NO_WAY,current_node_1->route_distance_so_far));
-    // tässä ikuisen loopin vaara? mitä tapahtuu jos reittiä ei löytynyt? säädä myöhemmin
+    route.push_back(std::make_tuple(current_node_1->location,NO_WAY,current_node_1->route_distance_so_far)); // .push_back() is amortized constant
+
     if(current_node_1->previous_node != nullptr) // if we enter to this if-structure, the route was found
-    {
-        while(true) // and because route was found, this while-loop won't be an infinite loop
+    {                                            // because if the route existed, DFS would have changed
+        // while-loop is O(n).                   // target node's previous node to be something else than nullptr.
+        while(true) // and because the route was found, this while-loop won't be an infinite loop
         {           // because at some point the starting point (fromxy) will be found
                     // and when it happens, we use break; to shut the loop down.
             route.push_back(std::make_tuple(current_node_2->location,current_node_1->previous_way,current_node_2->route_distance_so_far));
@@ -607,10 +622,11 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
             current_node_1 = current_node_2;
             current_node_2 = current_node_2->previous_node;
         }
-        std::reverse(route.begin(),route.end()); // O(n/2)
+        // route's data is now in reversed order because
+        // we started looping backwards from the target node.
+        std::reverse(route.begin(),route.end()); // std::reverse is O(n/2) on complexity
         return route;
     }
-
     //if we enter here, the route was not found
     route = {};
     return route;
@@ -619,10 +635,14 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
 
 void Datastructures::DFS(Coord & fromxy, Coord & toxy)
 {
+    // restore_nodes() complexity O(n).
     restore_nodes();
+    // DFS's complexity is O(V+E) in which
+    // V is the amount of nodes in a graph, and E
+    // the amount of edges in a graph.
     std::stack<Node*> DFS_stack;
-    Node* starting_point = &nodes_.at(fromxy);
-    DFS_stack.push(starting_point);
+    Node* starting_point = &nodes_.at(fromxy); // .at() constant on average, linear in worst case.
+    DFS_stack.push(starting_point);    
     while (DFS_stack.size() > 0)
     {
         Node* top_node = DFS_stack.top();
