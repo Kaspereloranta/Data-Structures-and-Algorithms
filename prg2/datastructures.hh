@@ -353,10 +353,10 @@ public:
     // to find some route between fromxy and toxy and its complexity is O(n).
     // When the DFS is done, this operation loops inside a while loop backwards
     // from the target node all the way back to the starting point and adds
-    // items to vector, and after looping reverses the vector completely by using .reverse() because
-    // otherwise it would be in reversed order starting from toxy and ending to fromxy.
-    // While loop's complexity is O(n) and .reserve()'s complexity is O(n/2), so we can
-    // say that the complexity of this oepration is O(n).
+    // items to vector. After looping, this method reverses the vector completely by using .reverse() because
+    // otherwise the vector to be returned would be in reversed order starting from toxy and ending to fromxy.
+    // While-loop's complexity is O(n) and .reserve()'s complexity is O(n/2), so we can
+    // say that the complexity of this operation is O(n).
     std::vector<std::tuple<Coord, WayID, Distance>> route_any(Coord fromxy, Coord toxy);
 
     // Non-compulsory operations
