@@ -450,7 +450,9 @@ void Datastructures::restore_nodes()
         nodes_.at(node.first).route_distance_so_far = -1;
         nodes_.at(node.first).steps_taken = -1;
         nodes_.at(node.first).previous_node = nullptr;
+        nodes_.at(node.first).secondary_previous_node = nullptr;
         nodes_.at(node.first).previous_way = NO_WAY;
+        nodes_.at(node.first).secondary_previous_way = NO_WAY;
     }
 }
 
@@ -489,7 +491,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         std::unordered_map<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.back(),id));
-        Node new_node = {coords.front(),accesses,WHITE,-1,-1,nullptr,NO_WAY};
+        Node new_node = {coords.front(),accesses,WHITE,-1,-1,nullptr,nullptr,NO_WAY,NO_WAY};
         nodes_.insert(std::make_pair(coords.front(),new_node));
     }
     else
@@ -500,7 +502,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         std::unordered_map<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.front(),id));
-        Node new_node = {coords.back(),accesses,WHITE,-1,-1,nullptr,NO_WAY};
+        Node new_node = {coords.back(),accesses,WHITE,-1,-1,nullptr,nullptr,NO_WAY,NO_WAY};
         nodes_.insert(std::make_pair(coords.back(),new_node));
     }
     else
@@ -601,7 +603,7 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
     }
 
     // O(V+E) = O(N)
-    DFS(fromxy,toxy);
+    DFS_route(fromxy,toxy);
     std::vector<std::tuple<Coord, WayID, Distance>> route;
 
     if(nodes_.at(toxy).previous_node == nullptr) // if this is true, DFS did not found
@@ -627,7 +629,7 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
 }
 
 
-void Datastructures::DFS(Coord & fromxy, Coord & toxy)
+void Datastructures::DFS_route(Coord & fromxy, Coord & toxy)
 {
     // restore_nodes() complexity O(n).
     restore_nodes();
@@ -670,6 +672,53 @@ void Datastructures::DFS(Coord & fromxy, Coord & toxy)
             top_node->node_status = BLACK;
         }
     }
+}
+
+Node* Datastructures::DFS_cycle(Coord &fromxy)
+{
+    // restore_nodes() complexity O(n).
+    restore_nodes();
+    // DFS's complexity is O(V+E) in which
+    // V is the amount of nodes in a graph, and E
+    // the amount of edges in a graph.
+    std::stack<Node*> DFS_stack;
+    Node* starting_point = &nodes_.at(fromxy); // .at() constant on average, linear in worst case.
+    starting_point->route_distance_so_far = 0;
+    starting_point->steps_taken = 0;
+    DFS_stack.push(starting_point);
+    while (DFS_stack.size() > 0)
+    {
+        Node* top_node = DFS_stack.top();
+        DFS_stack.pop();
+        Node* node_previously_handled;
+        if(top_node->node_status == WHITE)
+        {
+            top_node->node_status = GRAY;
+            DFS_stack.push(top_node);
+            for(auto neighbour : DFS_stack.top()->accesses)
+            {
+                if(nodes_.at(neighbour.first).node_status == WHITE)
+                {
+                    nodes_.at(neighbour.first).previous_node = top_node;
+                    nodes_.at(neighbour.first).previous_way = neighbour.second;
+                    DFS_stack.push(&nodes_.at(neighbour.first));
+                }
+                else if(nodes_.at(neighbour.first).node_status == GRAY and
+                        &nodes_.at(neighbour.first) != node_previously_handled) // cycle found
+                {
+                    nodes_.at(neighbour.first).secondary_previous_node = top_node;
+                    nodes_.at(neighbour.first).secondary_previous_way = neighbour.second;
+                    return &nodes_.at(neighbour.first);
+                }
+            }
+            node_previously_handled = top_node;
+        }
+        else
+        {
+            top_node->node_status = BLACK;
+        }
+    }
+    return nullptr;
 }
 
 void Datastructures::BFS(Coord &fromxy, Coord &toxy)
@@ -763,8 +812,37 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_least_cro
 
 std::vector<std::tuple<Coord, WayID> > Datastructures::route_with_cycle(Coord fromxy)
 {
-    // Replace this comment with your implementation
-    return {{NO_COORD, NO_WAY}};
+    if(nodes_.find(fromxy) == nodes_.end()) // for unordered_map .find() is constant on average, linear on worst case, .end() constant
+    {
+        return {{NO_COORD, NO_WAY}}; // given coordinate was not a node
+    }
+
+    if(nodes_.at(fromxy).accesses.size() < 1) // for unordered_map .find() .at() constant on average, worst case linear,
+    {
+          return {{NO_COORD, NO_WAY}}; // given node was not a crossroad
+    }
+    Node* cycle_node = DFS_cycle(fromxy);
+    std::vector<std::tuple<Coord, WayID>> cycle_route;
+    if(cycle_node == nullptr) //cycle was not found
+    {
+        return cycle_route;
+    }
+
+    cycle_route.push_back(std::make_tuple(cycle_node->location,NO_WAY));
+    cycle_route.push_back(std::make_tuple(cycle_node->secondary_previous_node->location,
+                                          cycle_node->secondary_previous_way));
+    Node* current_node_1 = cycle_node->secondary_previous_node;
+    Node* current_node_2 = cycle_node->secondary_previous_node->previous_node;
+
+    while(current_node_1->previous_node != nullptr)
+    {
+        cycle_route.push_back(std::make_tuple(current_node_2->location,current_node_1->previous_way));
+        current_node_1 = current_node_2;
+        current_node_2 = current_node_2->previous_node;
+    }
+
+    std::reverse(cycle_route.begin(),cycle_route.end());
+    return cycle_route;
 }
 
 std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_shortest_distance(Coord fromxy, Coord toxy)

@@ -110,7 +110,9 @@ struct Node
     Distance steps_taken;
     Distance route_distance_so_far;
     Node* previous_node;
+    Node* secondary_previous_node; // this is only used when finding cycles
     WayID previous_way;
+    WayID secondary_previous_way; // this is only used when finding cycles
 
 
 //    std::unordered_map<struct Node,struct Way> connections; <--- this may come handy later?
@@ -442,7 +444,9 @@ private:
     // the amount of edges in a graph, according to the common knowledge
     // and lectures of this course. We can simplify its asymptotic efficiency
     // by stating that its complexity is O(n).
-    void DFS(Coord & fromxy, Coord & toxy);
+    void DFS_route(Coord & fromxy, Coord & toxy);
+
+    Node* DFS_cycle(Coord & fromxy);
 
     void BFS(Coord & fromxy, Coord & toxy);
 
