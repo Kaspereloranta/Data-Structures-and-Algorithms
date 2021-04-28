@@ -588,8 +588,6 @@ void Datastructures::clear_ways()
 
 std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord fromxy, Coord toxy)
 {
-    std::vector<std::tuple<Coord, WayID, Distance>> route;
-
     if(nodes_.find(fromxy) == nodes_.end() or
             nodes_.find(toxy) == nodes_.end()) // for unordered_map .find() is constant on average, linear on worst case, .end() constant
     {
@@ -604,32 +602,25 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_any(Coord
 
     // O(V+E) = O(N)
     DFS(fromxy,toxy);
+    std::vector<std::tuple<Coord, WayID, Distance>> route;
+
+    if(nodes_.at(toxy).previous_node == nullptr) // DFS did not found a route
+    {
+        return route;
+    }
 
     Node* current_node_1 = &nodes_.at(toxy); //.at() is now constant, becaue the node with Coord toxy exists in nodes_
     Node* current_node_2 = nodes_.at(toxy).previous_node;
-    route.push_back(std::make_tuple(current_node_1->location,NO_WAY,current_node_1->route_distance_so_far)); // .push_back() is amortized constant
+    route.push_back(std::make_tuple(toxy,NO_WAY,current_node_1->route_distance_so_far)); // .push_back() is amortized constant
 
-    if(current_node_1->previous_node != nullptr) // if we enter to this if-structure, the route was found
-    {                                            // because if the route existed, DFS would have changed
-        // while-loop is O(n).                   // target node's previous node to be something else than nullptr.
-        while(true) // and because the route was found, this while-loop won't be an infinite loop
-        {           // because at some point the starting point (fromxy) will be found
-                    // and when it happens, we use break; to shut the loop down.
-            route.push_back(std::make_tuple(current_node_2->location,current_node_1->previous_way,current_node_2->route_distance_so_far));
-            if(current_node_2->location == fromxy)
-            {
-                break;
-            }
-            current_node_1 = current_node_2;
-            current_node_2 = current_node_2->previous_node;
-        }
-        // route's data is now in reversed order because
-        // we started looping backwards from the target node.
-        std::reverse(route.begin(),route.end()); // std::reverse is O(n/2) on complexity
-        return route;
+    while(current_node_1->previous_node != nullptr)
+    {
+        route.push_back(std::make_tuple(current_node_2->location,current_node_1->previous_way,
+                                        current_node_2->route_distance_so_far));
+        current_node_1 = current_node_2;
+        current_node_2 = current_node_2->previous_node;
     }
-    //if we enter here, the route was not found
-    route = {};
+    std::reverse(route.begin(),route.end());
     return route;
 }
 
