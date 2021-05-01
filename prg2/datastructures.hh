@@ -370,12 +370,26 @@ public:
     // but linear in worst case.
     bool remove_way(WayID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:        !!!
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: This method
+    // first checks that the given coordinates exists and are crossroads, and
+    // does that averagely in constant time but linear in worst case.
+    // After that, this operation calls private method BFS, which's complexity is O(n).
+    // After calling the BFS, which has edited the statuses of nodes in a graph,
+    // track_route is called to push the coordinates to vector in right order, which's
+    // complexity is linear as well, so we can say that the complexity of this method is O(n)
+    // as well.
     std::vector<std::tuple<Coord, WayID, Distance>> route_least_crossroads(Coord fromxy, Coord toxy);
 
     // Estimate of performance:
-    // Short rationale for estimate:        !!!!
+    // Short rationale for estimate: This method
+    // first checks that the given coordinate exists and is crossroad, and
+    // does that averagely in constant time but linear in worst case. After doing that
+    // it calls private method DFS_cycle, which complexity is O(n), to find the cycle.
+    // After that, the similar functionality than track_route is executed by this method, and
+    // its complexity is O(n). There is a slight difference betheen that functionality and track_route
+    // due to the fact that this operation tries to find the cycle, which is the reason that this
+    // operation does not call track_route as route_any and route_least_crossroads.
     std::vector<std::tuple<Coord, WayID>> route_with_cycle(Coord fromxy);
 
     // Estimate of performance:
@@ -468,6 +482,21 @@ private:
     // by stating that its complexity is O(n).
     void BFS(Coord & fromxy, Coord & toxy);
 
+    // Estimate of performance: Linear. O(n)
+    // Short rationale for estimate: This is a contributory method that tracks
+    // the route that ends to the Coord route_end, which is given as a parameter.
+    // This operation assumes that some graph-algorithm is called before calling this.
+    // However, this operation may be called before the execution of
+    // a graph algorithm but in that case it works similarly than in a situation
+    // where a route was nout found and returns empty vector. This method exists
+    // because route_any and route_least_crossroads require similar functionalities after
+    // calling graph-algorithms. The complexity of this method is O(n) because
+    // it pushes the route's nodes/coordinates to a vector inside a while-loop.
+    // after finishing the while-loop, this method calls reverse.() for vector
+    // to get the elements in the right order in which the starting point is the
+    // first element of the vector. The complexity of reverse.() is O(n/2) and the
+    // other methods called here are either constants or constanst on average but linear
+    // in worst cases, so we can say that the complexity of this method is O(n).
     std::vector<std::tuple<Coord, WayID, Distance>> track_route(Coord & route_end);
 
     std::unordered_map<PlaceID,Place> places_;
