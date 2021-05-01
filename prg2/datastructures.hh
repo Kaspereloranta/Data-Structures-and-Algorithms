@@ -371,11 +371,11 @@ public:
     bool remove_way(WayID id);
 
     // Estimate of performance:
-    // Short rationale for estimate:
+    // Short rationale for estimate:        !!!
     std::vector<std::tuple<Coord, WayID, Distance>> route_least_crossroads(Coord fromxy, Coord toxy);
 
     // Estimate of performance:
-    // Short rationale for estimate:
+    // Short rationale for estimate:        !!!!
     std::vector<std::tuple<Coord, WayID>> route_with_cycle(Coord fromxy);
 
     // Estimate of performance:
@@ -446,9 +446,29 @@ private:
     // by stating that its complexity is O(n).
     void DFS_route(Coord & fromxy, Coord & toxy);
 
+    // Estimate of performance: Linear. O(n). (O(V+E)).
+    // Short rationale for estimate: This operation
+    // executes DFS for the graph-structure and tries to find if there
+    // is a cycle in the graph. If a cycle is found, this method returns
+    // a pointer to the cycle-node. (the one that is founded twice by DFS)
+    // if cycle is not found, this returns nullptr.
+    // DFS's complexity is O(V+E), in which V is the amount of nodes in a graph, and E is
+    // the amount of edges in a graph, according to the common knowledge
+    // and lectures of this course. We can simplify its asymptotic efficiency
+    // by stating that its complexity is O(n).
     Node* DFS_cycle(Coord & fromxy);
 
+    // Estimate of performance: Linear. O(n) (O(V+E)).
+    // Short rationale for estimate: This operation
+    // executes BFS for graph-structure, which
+    // includes Nodes and Ways and its complexity
+    // is known to be O(V+E), in which V is the amount of nodes in a graph, and E is
+    // the amount of edges in a graph, according to the common knowledge
+    // and lectures of this course.  We can simplify its asymptotic efficiency
+    // by stating that its complexity is O(n).
     void BFS(Coord & fromxy, Coord & toxy);
+
+    std::vector<std::tuple<Coord, WayID, Distance>> track_route(Coord & route_end);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
