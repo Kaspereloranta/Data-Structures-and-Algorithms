@@ -447,8 +447,9 @@ void Datastructures::restore_nodes()
     for(auto node : nodes_)
     {
         nodes_.at(node.first).node_status = WHITE;
-        nodes_.at(node.first).route_distance_so_far = -1;
+        nodes_.at(node.first).route_distance_so_far = 9999999;
         nodes_.at(node.first).steps_taken = -1;
+        nodes_.at(node.first).route_distance_estimate = -1;
         nodes_.at(node.first).previous_node = nullptr;
         nodes_.at(node.first).secondary_previous_node = nullptr;
         nodes_.at(node.first).previous_way = NO_WAY;
@@ -491,7 +492,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         std::unordered_map<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.back(),id));
-        Node new_node = {coords.front(),accesses,WHITE,-1,-1,nullptr,nullptr,NO_WAY,NO_WAY};
+        Node new_node = {coords.front(),accesses,WHITE,-1,9999999,-1,nullptr,nullptr,NO_WAY,NO_WAY};
         nodes_.insert(std::make_pair(coords.front(),new_node));
     }
     else
@@ -502,7 +503,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     {
         std::unordered_map<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.front(),id));
-        Node new_node = {coords.back(),accesses,WHITE,-1,-1,nullptr,nullptr,NO_WAY,NO_WAY};
+        Node new_node = {coords.back(),accesses,WHITE,-1,9999999,-1,nullptr,nullptr,NO_WAY,NO_WAY};
         nodes_.insert(std::make_pair(coords.back(),new_node));
     }
     else
@@ -530,6 +531,14 @@ Distance Datastructures::calculate_distance(const std::vector<Coord> coords)
         Distance part_dist = floor(sqrt(pow(x_dist,2)+pow(y_dist,2)));
         dist += part_dist;
     }
+    return dist;
+}
+
+Distance Datastructures::distance_between_nodes(Coord point1, Coord point2)
+{
+    Distance x_dist = point2.x-point1.x;
+    Distance y_dist = point2.y-point2.y;
+    Distance dist = floor(sqrt(pow(x_dist,2)+pow(y_dist,2)));
     return dist;
 }
 
@@ -762,6 +771,53 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::track_route(Coo
     return route;
 }
 
+void Datastructures::A_star(Coord &fromxy, Coord &toxy)
+{
+    restore_nodes(); // O(n)
+    std::priority_queue<std::pair<Distance,Node*>> A_star_queue;
+    Node* starting_point = &nodes_.at(fromxy);
+    starting_point->route_distance_so_far = 0;
+    Distance shortest_possible_distance = distance_between_nodes(fromxy, toxy);
+    A_star_queue.push(std::make_pair(shortest_possible_distance*-1,starting_point));
+
+    while(A_star_queue.size() != 0)
+    {
+        Node* current_node = A_star_queue.top().second;
+        A_star_queue.pop();
+        for(auto neighbour : nodes_.at(current_node->location).accesses)
+        {
+            if(nodes_.at(neighbour.first).location == toxy)
+            {
+                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
+                                                                   ways_.at(neighbour.second).distance;
+                nodes_.at(neighbour.first).previous_node = current_node;
+                nodes_.at(neighbour.first).previous_way = neighbour.second;
+                A_star_queue = {};
+                break;
+            }
+            if(nodes_.at(neighbour.first).node_status == WHITE)
+            {
+                nodes_.at(neighbour.first).node_status = GRAY;
+                A_star_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_estimate*-1
+                                                 ,&nodes_.at(neighbour.first)));
+            }
+            if(nodes_.at(neighbour.first).route_distance_so_far > current_node->route_distance_so_far +
+                                                                  ways_.at(neighbour.second).distance)
+            {
+                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
+                                                                   ways_.at(neighbour.second).distance;
+
+                nodes_.at(neighbour.first).route_distance_estimate = nodes_.at(neighbour.first).route_distance_so_far +
+                                                                     distance_between_nodes(neighbour.first,toxy);
+                nodes_.at(neighbour.first).previous_way = neighbour.second;
+                nodes_.at(neighbour.first).previous_node = current_node;
+            }
+        }
+        current_node->node_status = BLACK;
+    }
+
+}
+
 
 bool Datastructures::remove_way(WayID id)
 {
@@ -830,8 +886,19 @@ std::vector<std::tuple<Coord, WayID> > Datastructures::route_with_cycle(Coord fr
 
 std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_shortest_distance(Coord fromxy, Coord toxy)
 {
-    // Replace this comment with your implementation
-    return {{NO_COORD, NO_WAY, NO_DISTANCE}};
+    if(nodes_.find(fromxy) == nodes_.end() or
+            nodes_.find(toxy) == nodes_.end()) // for unordered_map .find() is constant on average, linear on worst case, .end() constant
+    {
+        return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of coordinates were not nodes.
+    }
+
+    if(nodes_.at(fromxy).accesses.size() < 1 or
+       nodes_.at(toxy).accesses.size() < 1) // for unordered_map .find() .at() constant on average, worst case linear,
+    {
+          return {{NO_COORD, NO_WAY, NO_DISTANCE}}; // one or both of nodes were not crossroads.
+    }
+    A_star(fromxy,toxy);
+    return track_route(toxy);
 }
 
 Distance Datastructures::trim_ways()

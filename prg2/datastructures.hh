@@ -109,6 +109,7 @@ struct Node
     Status node_status;
     Distance steps_taken;
     Distance route_distance_so_far;
+    Distance route_distance_estimate;
     Node* previous_node;
     Node* secondary_previous_node; // this is only used when finding cycles
     WayID previous_way;
@@ -437,6 +438,12 @@ private:
     // this operation is constant.
     Distance calculate_distance(std::vector<Coord> const coords);
 
+    //
+    // Estimate of performance: Constant
+    // Short rationale for estimate: This method simplifically
+    // calculates the distance between two coordinates.
+    Distance distance_between_nodes(Coord point1, Coord point2);
+
     // Estimate of performance: O(n)
     // Short rationale for estimate:
     // If there are no nodes at all or there are only one,
@@ -498,6 +505,8 @@ private:
     // other methods called here are either constants or constanst on average but linear
     // in worst cases, so we can say that the complexity of this method is O(n).
     std::vector<std::tuple<Coord, WayID, Distance>> track_route(Coord & route_end);
+
+    void A_star(Coord & fromxy, Coord & toxy);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
