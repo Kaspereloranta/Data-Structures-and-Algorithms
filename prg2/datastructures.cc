@@ -780,22 +780,12 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
     Distance shortest_possible_distance = distance_between_nodes(fromxy, toxy);
     starting_point->node_status = GRAY;
     A_star_queue.push(std::make_pair(shortest_possible_distance*-1,starting_point));
-
     while(A_star_queue.size() != 0)
     {
         Node* current_node = A_star_queue.top().second;
         A_star_queue.pop();
         for(auto neighbour : current_node->accesses)
         {
-            if(nodes_.at(neighbour.first).location == toxy)
-            {
-                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
-                                                                   ways_.at(neighbour.second).distance;
-                nodes_.at(neighbour.first).previous_way = neighbour.second;
-                nodes_.at(neighbour.first).previous_node = current_node;
-                A_star_queue = {};
-                break;
-            }
             if(nodes_.at(neighbour.first).node_status == WHITE)
             {
                 nodes_.at(neighbour.first).node_status = GRAY;
@@ -824,6 +814,11 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
 
                 A_star_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_estimate*-1
                                                  ,&nodes_.at(neighbour.first)));
+            }
+            if(nodes_.at(neighbour.first).location == toxy)
+            {
+                A_star_queue = {};
+                break;
             }
         }
         current_node->node_status = BLACK;
