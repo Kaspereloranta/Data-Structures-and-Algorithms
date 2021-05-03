@@ -469,7 +469,7 @@ std::vector<WayID> Datastructures::all_ways()
 }
 
 bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
-{   
+{
     if(ways_.find(id) != ways_.end()) // find() averagely constant for unordered_map, linear in worst case. end() is constant)
     {
         return false;
@@ -627,7 +627,7 @@ void Datastructures::DFS_route(Coord & fromxy, Coord & toxy)
     Node* starting_point = &nodes_.at(fromxy); // .at() constant on average, linear in worst case.
     starting_point->route_distance_so_far = 0;
     starting_point->steps_taken = 0;
-    DFS_stack.push(starting_point);    
+    DFS_stack.push(starting_point);
     while (DFS_stack.size() > 0)
     {
         Node* top_node = DFS_stack.top();
@@ -787,27 +787,43 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
         A_star_queue.pop();
         for(auto neighbour : current_node->accesses)
         {
+            if(nodes_.at(neighbour.first).location == toxy)
+            {
+                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
+                                                                   ways_.at(neighbour.second).distance;
+                nodes_.at(neighbour.first).previous_way = neighbour.second;
+                nodes_.at(neighbour.first).previous_node = current_node;
+                A_star_queue = {};
+                break;
+            }
             if(nodes_.at(neighbour.first).node_status == WHITE)
             {
                 nodes_.at(neighbour.first).node_status = GRAY;
+
+                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
+                                                                   ways_.at(neighbour.second).distance;
+
+                nodes_.at(neighbour.first).route_distance_estimate = current_node->route_distance_so_far +
+                        ways_.at(neighbour.second).distance + distance_between_nodes(neighbour.first,toxy);
+
+                nodes_.at(neighbour.first).previous_way = neighbour.second;
+                nodes_.at(neighbour.first).previous_node = current_node;
+
                 A_star_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_estimate*-1
                                                  ,&nodes_.at(neighbour.first)));
             }
-            if(nodes_.at(neighbour.first).route_distance_so_far > current_node->route_distance_so_far +
+            else if(nodes_.at(neighbour.first).route_distance_so_far > current_node->route_distance_so_far +
                                                                   ways_.at(neighbour.second).distance)
             {
                 nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
                                                                    ways_.at(neighbour.second).distance;
-
                 nodes_.at(neighbour.first).route_distance_estimate = nodes_.at(neighbour.first).route_distance_so_far +
-                                                                     distance_between_nodes(neighbour.first,toxy);
+                                                                   distance_between_nodes(neighbour.first,toxy);
                 nodes_.at(neighbour.first).previous_way = neighbour.second;
                 nodes_.at(neighbour.first).previous_node = current_node;
-                if(nodes_.at(neighbour.first).location == toxy)
-                {
-                    A_star_queue = {};
-                    break;
-                }
+
+                A_star_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_estimate*-1
+                                                 ,&nodes_.at(neighbour.first)));
             }
         }
         current_node->node_status = BLACK;
