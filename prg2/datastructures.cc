@@ -803,8 +803,8 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
                 nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
                                                                    ways_.at(neighbour.second).distance;
 
-                nodes_.at(neighbour.first).route_distance_estimate = current_node->route_distance_so_far +
-                        ways_.at(neighbour.second).distance + distance_between_nodes(neighbour.first,toxy);
+                nodes_.at(neighbour.first).route_distance_estimate = nodes_.at(neighbour.first).route_distance_so_far +
+                        distance_between_nodes(neighbour.first,toxy);
 
                 nodes_.at(neighbour.first).previous_way = neighbour.second;
                 nodes_.at(neighbour.first).previous_node = current_node;
