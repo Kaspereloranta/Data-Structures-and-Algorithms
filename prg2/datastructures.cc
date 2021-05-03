@@ -538,7 +538,7 @@ Distance Datastructures::distance_between_nodes(Coord point1, Coord point2)
 {
     Distance x_dist = point2.x-point1.x;
     Distance y_dist = point2.y-point2.y;
-    Distance dist = floor(sqrt(pow(x_dist,2)+pow(y_dist,2)));
+    Distance dist = sqrt(pow(x_dist,2)+pow(y_dist,2));
     return dist;
 }
 
@@ -778,23 +778,15 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
     Node* starting_point = &nodes_.at(fromxy);
     starting_point->route_distance_so_far = 0;
     Distance shortest_possible_distance = distance_between_nodes(fromxy, toxy);
+    starting_point->node_status = GRAY;
     A_star_queue.push(std::make_pair(shortest_possible_distance*-1,starting_point));
 
     while(A_star_queue.size() != 0)
     {
         Node* current_node = A_star_queue.top().second;
         A_star_queue.pop();
-        for(auto neighbour : nodes_.at(current_node->location).accesses)
+        for(auto neighbour : current_node->accesses)
         {
-            if(nodes_.at(neighbour.first).location == toxy)
-            {
-                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far +
-                                                                   ways_.at(neighbour.second).distance;
-                nodes_.at(neighbour.first).previous_node = current_node;
-                nodes_.at(neighbour.first).previous_way = neighbour.second;
-                A_star_queue = {};
-                break;
-            }
             if(nodes_.at(neighbour.first).node_status == WHITE)
             {
                 nodes_.at(neighbour.first).node_status = GRAY;
@@ -811,11 +803,46 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
                                                                      distance_between_nodes(neighbour.first,toxy);
                 nodes_.at(neighbour.first).previous_way = neighbour.second;
                 nodes_.at(neighbour.first).previous_node = current_node;
+                if(nodes_.at(neighbour.first).location == toxy)
+                {
+                    A_star_queue = {};
+                    break;
+                }
             }
         }
         current_node->node_status = BLACK;
     }
+}
 
+void Datastructures::Dijkstra(Coord &fromxy)
+{
+    restore_nodes();
+    std::priority_queue<std::pair<Distance,Node*>> Dijkstra_queue;
+    nodes_.at(fromxy).node_status = GRAY;
+    nodes_.at(fromxy).route_distance_so_far = 0;
+    Dijkstra_queue.push(std::make_pair(0,&nodes_.at(fromxy)));
+    while (Dijkstra_queue.size() != 0)
+    {
+        Node* current_node = Dijkstra_queue.top().second;
+        Dijkstra_queue.pop();
+        for(auto neighbour : current_node->accesses)
+        {
+            if(nodes_.at(neighbour.first).node_status == WHITE)
+            {
+                nodes_.at(neighbour.first).node_status = GRAY;
+                Dijkstra_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_so_far*-1,&nodes_.at(neighbour.first)));
+            }
+            if(nodes_.at(neighbour.first).route_distance_so_far > current_node->route_distance_so_far
+                                                                  + ways_.at(neighbour.second).distance)
+            {
+                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far
+                                                                 + ways_.at(neighbour.second).distance;
+                nodes_.at(neighbour.first).previous_node = current_node;
+                nodes_.at(neighbour.first).previous_way = neighbour.second;
+            }
+        }
+        current_node->node_status = BLACK;
+    }
 }
 
 
