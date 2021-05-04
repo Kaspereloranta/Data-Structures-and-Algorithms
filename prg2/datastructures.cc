@@ -829,9 +829,12 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
     }
 }
 
-void Datastructures::Dijkstra(Coord fromxy)
+void Datastructures::Dijkstra(Coord fromxy, bool restoreNodes)
 {
-    restore_nodes();
+    if(restoreNodes)
+    {
+         restore_nodes();
+    }
     std::priority_queue<std::pair<Distance,Node*>> Dijkstra_queue;
     nodes_.at(fromxy).node_status = GRAY;
     nodes_.at(fromxy).route_distance_so_far = 0;
@@ -956,21 +959,19 @@ Distance Datastructures::trim_ways()
 {
     std::pair<Coord,Node> seed = *nodes_.begin();
     Coord seed_coord = seed.first;
-    Dijkstra(seed_coord);
+    qDebug() << seed_coord.x << seed_coord.y;
+    Dijkstra(seed_coord,true);
     for(auto crossroad : nodes_)
     {
         if(crossroad.second.previous_way == NO_WAY)
         {
-            Dijkstra(crossroad.first); // if entered here, there were a point of discontinuity in the graph.
+            Dijkstra(crossroad.first,false); // if entered here, there were a point of discontinuity in the graph.
         }   // and by doing this we ensure the whole graph gets handled.
     }
     std::unordered_set<WayID> ways_to_be_saved;
-    Distance network_distance = 0;
-
     for(auto crossroad : nodes_)
     {
         ways_to_be_saved.insert(crossroad.second.previous_way);
-        network_distance += ways_.at(crossroad.second.previous_way).distance;
     }
 
     for(auto way : ways_)
@@ -990,6 +991,11 @@ Distance Datastructures::trim_ways()
                 node.second.accesses.erase(access.first);
             }
         }
+    }
+    Distance network_distance = 0;
+    for(auto way : ways_)
+    {
+        network_distance += way.second.distance;
     }
     return network_distance;
 }

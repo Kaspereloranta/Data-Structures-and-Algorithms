@@ -508,7 +508,7 @@ private:
 
     void A_star(Coord & fromxy, Coord & toxy);
 
-    void Dijkstra( Coord fromxy);
+    void Dijkstra( Coord fromxy, bool restoreNodes);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;
