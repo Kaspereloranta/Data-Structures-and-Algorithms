@@ -490,7 +490,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     // in the worst case it's linear.
     if(nodes_.find(coords.front()) == nodes_.end())
     {
-        std::unordered_map<Coord,WayID,CoordHash> accesses;
+        std::unordered_multimap<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.back(),id));
         Node new_node = {coords.front(),accesses,WHITE,-1,9999999,-1,nullptr,nullptr,NO_WAY,NO_WAY};
         nodes_.insert(std::make_pair(coords.front(),new_node));
@@ -501,7 +501,7 @@ bool Datastructures::add_way(WayID id, std::vector<Coord> coords)
     }
     if(nodes_.find(coords.back()) == nodes_.end())
     {
-        std::unordered_map<Coord,WayID,CoordHash> accesses;
+        std::unordered_multimap<Coord,WayID,CoordHash> accesses;
         accesses.insert(std::make_pair(coords.front(),id));
         Node new_node = {coords.back(),accesses,WHITE,-1,9999999,-1,nullptr,nullptr,NO_WAY,NO_WAY};
         nodes_.insert(std::make_pair(coords.back(),new_node));
@@ -784,6 +784,15 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
     {
         Node* current_node = A_star_queue.top().second;
         A_star_queue.pop();
+        if(current_node->location == toxy)
+        {
+            A_star_queue = {};
+            break;
+        }
+        if(current_node->node_status == BLACK)
+        {
+            continue; // to check duplicates
+        }
         for(auto neighbour : current_node->accesses)
         {
             if(nodes_.at(neighbour.first).node_status == WHITE)
@@ -814,11 +823,6 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
 
                 A_star_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_estimate*-1
                                                  ,&nodes_.at(neighbour.first)));
-            }
-            if(nodes_.at(neighbour.first).location == toxy)
-            {
-                A_star_queue = {};
-                break;
             }
         }
         current_node->node_status = BLACK;

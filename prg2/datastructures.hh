@@ -17,6 +17,7 @@
 #include <map>
 #include <QDebug>
 #include <memory>
+#include <QString>
 
 // Types for IDs
 using PlaceID = long long int;
@@ -105,7 +106,7 @@ struct Node
     Coord location;
     // harkitse allaolevan rakenteen muuttamista siten, että avaimina on osoittimia Nodeihin
     // Voi olla hankalaa, saattaa tarvita oman hajautusfunktion? Jos tarvii, ÄLÄ EDES YRITÄ
-    std::unordered_map<Coord,WayID,CoordHash> accesses;
+    std::unordered_multimap<Coord,WayID,CoordHash> accesses;
     Status node_status;
     Distance steps_taken;
     Distance route_distance_so_far;
