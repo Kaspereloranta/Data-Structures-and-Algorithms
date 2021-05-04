@@ -959,8 +959,8 @@ Distance Datastructures::trim_ways()
 {
     std::pair<Coord,Node> seed = *nodes_.begin();
     Coord seed_coord = seed.first;
-    qDebug() << seed_coord.x << seed_coord.y;
     Dijkstra(seed_coord,true);
+    // O(n*n*logn)).
     for(auto crossroad : nodes_)
     {
         if(crossroad.second.previous_way == NO_WAY)
@@ -968,12 +968,13 @@ Distance Datastructures::trim_ways()
             Dijkstra(crossroad.first,false); // if entered here, there were a point of discontinuity in the graph.
         }   // and by doing this we ensure the whole graph gets handled.
     }
+    // O(n) averagely.
     std::unordered_set<WayID> ways_to_be_saved;
     for(auto crossroad : nodes_)
     {
         ways_to_be_saved.insert(crossroad.second.previous_way);
     }
-
+    // O(n) averagely.
     for(auto way : ways_)
     {
         if(ways_to_be_saved.find(way.first) == ways_to_be_saved.end())
@@ -981,7 +982,7 @@ Distance Datastructures::trim_ways()
             remove_way(way.first);
         }
     }
-
+    // O(n) averagely.
     for(auto node : nodes_)
     {
         for(auto access : node.second.accesses)
@@ -992,6 +993,7 @@ Distance Datastructures::trim_ways()
             }
         }
     }
+    // O(n) averagely.
     Distance network_distance = 0;
     for(auto way : ways_)
     {

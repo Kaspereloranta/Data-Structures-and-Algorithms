@@ -15,9 +15,7 @@
 #include <unordered_map>
 #include <set>
 #include <map>
-#include <QDebug>
 #include <memory>
-#include <QString>
 
 // Types for IDs
 using PlaceID = long long int;
@@ -104,8 +102,6 @@ struct Area
 struct Node
 {
     Coord location;
-    // harkitse allaolevan rakenteen muuttamista siten, että avaimina on osoittimia Nodeihin
-    // Voi olla hankalaa, saattaa tarvita oman hajautusfunktion? Jos tarvii, ÄLÄ EDES YRITÄ
     std::unordered_multimap<Coord,WayID,CoordHash> accesses;
     Status node_status;
     Distance steps_taken;
@@ -115,10 +111,7 @@ struct Node
     Node* secondary_previous_node; // this is only used when finding cycles
     WayID previous_way;
     WayID secondary_previous_way; // this is only used when finding cycles
-
-//    std::unordered_map<struct Node,struct Way> connections; <--- this may come handy later?
-    // add later the things             // a crossroad, otherwise it is an edge
-};  // you need to use graph-algorithms // of the graph or a separate node
+};
 
 
 struct Way
@@ -393,12 +386,27 @@ public:
     // operation does not call track_route as route_any and route_least_crossroads.
     std::vector<std::tuple<Coord, WayID>> route_with_cycle(Coord fromxy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n*log(n))
+    // Short rationale for estimate: This operation checks whether the given
+    // coordinates were crossroads averagely in constant time, linearly
+    // in worst case. After doing that, this method calls A*-algorithm
+    // for graph-structure, which complexity is O(n*log(n)). After
+    // that, this method tracks the route to vector by calling track_route, which
+    // is known to be linear O(n) in complexity. So the main factor affecting to complexity
+    // is A* and therefore the complexity of this method is O(n*log(n)) as well.
     std::vector<std::tuple<Coord, WayID, Distance>> route_shortest_distance(Coord fromxy, Coord toxy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n*n*log(n)).
+    // Short rationale for estimate: This operation
+    // calls Dijkstra's algorithm, which complexity is known to be
+    // O(n*log(n)). And because in the worst case the Dijkstra's
+    // algorithm may be called multiple times inside the for-loop
+    // it brings the coefficient of n to the whole complexity of this method.
+    // (Dijkstra's algorithm may be called multiple twice IF there are points
+    // of discontinuity in the graph.)
+    //   ! ! ! HOX ! ! ! : this operation does not work exactly the way it was
+    // supposed to work, according to the project's assignment. Check
+    // readme.pdf for more details.
     Distance trim_ways();
 
 private:
@@ -506,8 +514,24 @@ private:
     // in worst cases, so we can say that the complexity of this method is O(n).
     std::vector<std::tuple<Coord, WayID, Distance>> track_route(Coord & route_end);
 
+    // Estimate of performance: O(n*log(n)). ( O((V+E)*log (V) )
+    // Short rationale for estimate: This operation
+    // executes A* algorithm for the graph structure
+    // includes Nodes and Ways and its complexity
+    // is known to be O((V+E)*log (V), in which V is the amount of nodes in a graph, and E is
+    // the amount of edges in a graph, according to the common knowledge
+    // and lectures of this course.  We can simplify its asymptotic efficiency
+    // by stating that its complexity is O(n*log(n)).
     void A_star(Coord & fromxy, Coord & toxy);
 
+    // Estimate of performance: O(n*log(n)). ( O((V+E)*log (V) )
+    // Short rationale for estimate: This operation
+    // executes Dijkstra's algorithm for the graph structure
+    // includes Nodes and Ways and its complexity
+    // is known to be O((V+E)*log (V), in which V is the amount of nodes in a graph, and E is
+    // the amount of edges in a graph, according to the common knowledge
+    // and lectures of this course.  We can simplify its asymptotic efficiency
+    // by stating that its complexity is O(n*log(n)).
     void Dijkstra( Coord fromxy, bool restoreNodes);
 
     std::unordered_map<PlaceID,Place> places_;
