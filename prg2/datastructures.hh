@@ -116,7 +116,6 @@ struct Node
     WayID previous_way;
     WayID secondary_previous_way; // this is only used when finding cycles
 
-
 //    std::unordered_map<struct Node,struct Way> connections; <--- this may come handy later?
     // add later the things             // a crossroad, otherwise it is an edge
 };  // you need to use graph-algorithms // of the graph or a separate node
@@ -509,7 +508,7 @@ private:
 
     void A_star(Coord & fromxy, Coord & toxy);
 
-    void Dijkstra(Coord & fromxy);
+    void Dijkstra( Coord fromxy);
 
     std::unordered_map<PlaceID,Place> places_;
     std::unordered_map<AreaID,Area> areas_;

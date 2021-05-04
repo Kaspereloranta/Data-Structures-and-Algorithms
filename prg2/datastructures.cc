@@ -829,7 +829,7 @@ void Datastructures::A_star(Coord &fromxy, Coord &toxy)
     }
 }
 
-void Datastructures::Dijkstra(Coord &fromxy)
+void Datastructures::Dijkstra(Coord fromxy)
 {
     restore_nodes();
     std::priority_queue<std::pair<Distance,Node*>> Dijkstra_queue;
@@ -840,20 +840,29 @@ void Datastructures::Dijkstra(Coord &fromxy)
     {
         Node* current_node = Dijkstra_queue.top().second;
         Dijkstra_queue.pop();
+        if(current_node->node_status == BLACK)
+        {
+            continue; // to check duplicates
+        }
         for(auto neighbour : current_node->accesses)
         {
             if(nodes_.at(neighbour.first).node_status == WHITE)
             {
                 nodes_.at(neighbour.first).node_status = GRAY;
+                nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far
+                                                                 + ways_.at(neighbour.second).distance;
+                nodes_.at(neighbour.first).previous_node = current_node;
+                nodes_.at(neighbour.first).previous_way = neighbour.second;
                 Dijkstra_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_so_far*-1,&nodes_.at(neighbour.first)));
             }
-            if(nodes_.at(neighbour.first).route_distance_so_far > current_node->route_distance_so_far
+            else if(nodes_.at(neighbour.first).route_distance_so_far > current_node->route_distance_so_far
                                                                   + ways_.at(neighbour.second).distance)
             {
                 nodes_.at(neighbour.first).route_distance_so_far = current_node->route_distance_so_far
                                                                  + ways_.at(neighbour.second).distance;
                 nodes_.at(neighbour.first).previous_node = current_node;
                 nodes_.at(neighbour.first).previous_way = neighbour.second;
+                Dijkstra_queue.push(std::make_pair(nodes_.at(neighbour.first).route_distance_so_far*-1,&nodes_.at(neighbour.first)));
             }
         }
         current_node->node_status = BLACK;
@@ -945,6 +954,42 @@ std::vector<std::tuple<Coord, WayID, Distance> > Datastructures::route_shortest_
 
 Distance Datastructures::trim_ways()
 {
-    // Replace this comment with your implementation
-    return NO_DISTANCE;
+    std::pair<Coord,Node> seed = *nodes_.begin();
+    Coord seed_coord = seed.first;
+    Dijkstra(seed_coord);
+    for(auto crossroad : nodes_)
+    {
+        if(crossroad.second.previous_way == NO_WAY)
+        {
+            Dijkstra(crossroad.first); // if entered here, there were a point of discontinuity in the graph.
+        }   // and by doing this we ensure the whole graph gets handled.
+    }
+    std::unordered_set<WayID> ways_to_be_saved;
+    Distance network_distance = 0;
+
+    for(auto crossroad : nodes_)
+    {
+        ways_to_be_saved.insert(crossroad.second.previous_way);
+        network_distance += ways_.at(crossroad.second.previous_way).distance;
+    }
+
+    for(auto way : ways_)
+    {
+        if(ways_to_be_saved.find(way.first) == ways_to_be_saved.end())
+        {
+            remove_way(way.first);
+        }
+    }
+
+    for(auto node : nodes_)
+    {
+        for(auto access : node.second.accesses)
+        {
+            if(ways_to_be_saved.find(access.second) == ways_to_be_saved.end())
+            {
+                node.second.accesses.erase(access.first);
+            }
+        }
+    }
+    return network_distance;
 }
