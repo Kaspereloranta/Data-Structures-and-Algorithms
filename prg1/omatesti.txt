@@ -1,0 +1,54 @@
+
+add_area 1 'paikka1' (1,0) (1,1) (0,1)
+add_area 2 'paikka2' (6,4) (8,5) (3,7) (4,9) (4,6)
+add_area 3 'paikka3' (3,6) (6,3) (8,9) (6,4)
+add_area 4 'paikka4' (7,4) (8,5) (5,2) (6,2) (7,5) 
+add_area 5 'paikka5' (1,0) (1,1) (0,1)
+add_area 6 'paikka6' (1,0) (1,1) (0,1)
+add_area 7 'paikka7' (1,0) (1,1) (0,1)
+add_area 8 'paikka8' (1,0) (1,1) (0,1)
+add_area 9 'paikka9' (1,0) (1,1) (0,1)
+add_area 10 'paikka10' (1,0) (1,1) (0,1)
+add_area 11 'paikka11' (1,0) (1,1) (0,1)
+add_area 12 'paikka12' (1,0) (1,1) (0,1)
+add_area 13 'paikka13' (1,0) (1,1) (0,1)
+add_area 14 'paikka14' (1,0) (1,1) (0,1)
+add_area 15 'paikka15' (1,0) (1,1) (0,1)
+add_area 16 'paikka16' (5,5) (7,9) (3,4)
+
+add_area 17 'paikka17' (5,5) (7,9) (3,4)
+add_area 18 'paikka18' (5,5) (7,9) (3,4)
+add_area 19 'paikka19' (5,5) (7,9) (3,4)
+add_area 20 'paikka20' (5,5) (7,9) (3,4)
+add_area 21 'paikka21' (5,5) (7,9) (3,4)
+add_area 22 'paikka22' (5,5) (7,9) (3,4)
+add_area 23 'paikka23' (5,5) (7,9) (3,4)
+add_area 24 'paikka24' (5,5) (7,9) (3,4)
+add_area 25 'paikka25' (5,5) (7,9) (3,4)
+
+add_subarea_to_area 18 17
+add_subarea_to_area 19 17
+add_subarea_to_area 20 18
+add_subarea_to_area 21 18
+add_subarea_to_area 22 19
+add_subarea_to_area 23 22
+add_subarea_to_area 24 22
+add_subarea_to_area 25 22
+
+add_subarea_to_area 2 1
+add_subarea_to_area 3 1
+add_subarea_to_area 2 1
+add_subarea_to_area 4 2
+add_subarea_to_area 5 2
+add_subarea_to_area 6 2
+add_subarea_to_area 9 5
+add_subarea_to_area 10 6
+add_subarea_to_area 11 10
+add_subarea_to_area 7 3
+add_subarea_to_area 8 3
+add_subarea_to_area 12 7
+add_subarea_to_area 13 8
+add_subarea_to_area 14 13
+add_subarea_to_area 15 13
+add_subarea_to_area 1 16
+
